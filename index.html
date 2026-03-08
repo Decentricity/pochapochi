@@ -367,6 +367,22 @@
             overflow: hidden;
         }
 
+        .chat-main-window.game-active .top-bar {
+            flex: 0 0 10%;
+            min-height: 58px;
+        }
+
+        .chat-main-window.game-active .game-window {
+            flex: 1 1 60%;
+            min-height: 0;
+            max-height: none;
+        }
+
+        .chat-main-window.game-active .messages-window {
+            flex: 0 0 30%;
+            min-height: 0;
+        }
+
         .error-banner {
             background: var(--error);
             color: white;
@@ -1193,6 +1209,7 @@
             border: 2px solid;
             border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
             border-bottom: none;
+            flex-shrink: 0;
         }
 
         .game-detail-title {
@@ -1213,6 +1230,13 @@
         .game-detail-action {
             padding: 4px 8px;
             font-size: 9px;
+        }
+
+        .game-detail {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            height: 100%;
         }
 
         .iframe-game-shell {
@@ -1874,6 +1898,19 @@
             .chat-main-window {
                 height: 100%;
                 min-height: 0;
+            }
+
+            .chat-main-window.game-active .top-bar {
+                flex-basis: 10%;
+                min-height: 52px;
+            }
+
+            .chat-main-window.game-active .game-window {
+                flex-basis: 60%;
+            }
+
+            .chat-main-window.game-active .messages-window {
+                flex-basis: 30%;
             }
             
             .top-bar {
@@ -3082,6 +3119,7 @@
             var tebakDetail = document.getElementById('gameDetail');
             var iframeDetail = document.getElementById('iframeGameDetail');
             var gameWindow = document.querySelector('.game-window');
+            var chatMainWindow = document.querySelector('.chat-main-window');
 
             if (launcher) {
                 launcher.classList.toggle('hidden', gameId === 'tebak-gambar' || gameId === 'kapal-ikan');
@@ -3099,6 +3137,10 @@
                 iframeGameMaximized = false;
                 gameWindow.classList.remove('maximized');
                 updateIframeGameControls();
+            }
+
+            if (chatMainWindow) {
+                chatMainWindow.classList.toggle('game-active', !!gameId);
             }
 
             renderGame();
