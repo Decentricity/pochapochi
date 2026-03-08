@@ -388,27 +388,30 @@
 
         .top-bar {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: space-between;
             padding: 8px;
             background: var(--bg-window);
             flex-shrink: 0;
             gap: 8px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
         }
 
         .invite-section {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
             gap: 6px;
             flex: 1;
-            min-width: 200px;
+            min-width: 0;
         }
 
         .invite-row {
             display: flex;
             gap: 6px;
             align-items: center;
+            flex-shrink: 0;
         }
 
         .share-btn::before {
@@ -819,16 +822,17 @@
         }
 
         .display-name-row {
-            margin-top: 6px;
             display: flex;
-            flex-direction: column;
-            gap: 3px;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
         }
 
         .display-name-label {
             font-size: 10px;
             color: var(--text-secondary);
             font-weight: 500;
+            white-space: nowrap;
         }
 
         .display-name-label::before {
@@ -844,12 +848,14 @@
             display: flex;
             gap: 4px;
             align-items: center;
+            min-width: 0;
         }
 
         .display-name-input {
             flex: 1;
             font-size: 10px;
             min-width: 0;
+            width: 160px;
         }
 
         .display-name-input::placeholder {
@@ -871,10 +877,7 @@
         }
 
         .right-panel {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 6px;
+            display: none;
         }
 
         .status {
@@ -1876,9 +1879,7 @@
             .top-bar {
                 padding: 5px 6px;
                 gap: 6px;
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) auto;
-                align-items: start;
+                align-items: center;
             }
 
             .share-dialog-content {
@@ -1886,7 +1887,9 @@
             }
 
             .invite-section {
-                min-width: 0;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
                 gap: 4px;
             }
 
@@ -1903,32 +1906,22 @@
                 font-size: 8px;
             }
 
-            .display-name-row {
-                margin-top: 2px;
-                gap: 2px;
-            }
-
             .display-name-label {
                 font-size: 9px;
             }
 
+            .display-name-row {
+                gap: 4px;
+            }
+
             .display-name-input {
                 font-size: 9px;
+                width: 96px;
             }
 
             .display-name-save-btn {
                 padding: 3px 6px;
                 font-size: 9px;
-            }
-
-            .right-panel {
-                gap: 4px;
-                align-items: flex-end;
-            }
-
-            .status {
-                font-size: 9px;
-                gap: 2px;
             }
             
             .game-window {
@@ -2187,11 +2180,6 @@
                 <div class="invite-section">
                     <div class="invite-row">
                         <button class="retro-btn share-btn" id="shareBtn">Share Link</button>
-                        <button class="retro-btn setup-link-btn" id="showSetupBtn">How It Works</button>
-                    </div>
-                    <div class="invite-input-wrapper">
-                        <input type="text" class="retro-input invite-input" id="inviteInput" readonly>
-                        <span class="invite-hint" id="inviteHint">Press Ctrl+C (or Cmd+C) to copy</span>
                     </div>
                     <div class="display-name-row">
                         <label class="display-name-label">Display name <span class="display-name-hint">(optional)</span></label>
@@ -2202,7 +2190,7 @@
                     </div>
                 </div>
                 
-                <div class="right-panel">
+                <div class="right-panel" aria-hidden="true">
                     <div class="status">
                         <div class="status-row">
                             <span class="status-dot" id="statusDot"></span>
@@ -2630,9 +2618,12 @@
             showChatApp();
         });
 
-        document.getElementById('showSetupBtn').addEventListener('click', function() {
-            showSetupScreen();
-        });
+        var showSetupBtn = document.getElementById('showSetupBtn');
+        if (showSetupBtn) {
+            showSetupBtn.addEventListener('click', function() {
+                showSetupScreen();
+            });
+        }
 
         // Always go directly to chat app - skip setup screen
         showChatApp();
@@ -2991,7 +2982,9 @@
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(function() {
                     showCopyFeedback(true);
-                    inviteHint.classList.remove('visible');
+                    if (inviteHint) {
+                        inviteHint.classList.remove('visible');
+                    }
                 }).catch(function() {
                     showFallbackCopy();
                 });
@@ -3003,6 +2996,10 @@
         function showFallbackCopy() {
             var inviteInput = document.getElementById('inviteInput');
             var inviteHint = document.getElementById('inviteHint');
+
+            if (!inviteInput || !inviteHint) {
+                return;
+            }
             
             inviteInput.focus();
             inviteInput.select();
@@ -4736,7 +4733,9 @@
             
             // Set up invite input
             var inviteInput = document.getElementById('inviteInput');
-            inviteInput.value = inviteUrl;
+            if (inviteInput) {
+                inviteInput.value = inviteUrl;
+            }
             
             // Share dialog link is already set up via the shareBtn handler
             // Just need to ensure QR can be regenerated if URL changes
