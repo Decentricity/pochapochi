@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
-    <meta name="description" content="End-to-end encrypted peer-to-peer chat powered by GunDB">
-    <title>pochapochi</title>
+    <meta name="description" content="Pocha Pochi social chat and tebak gambar powered by GunDB">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="pocha-version" content="20260309-0528">
+    <title>Pocha Pochi</title>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -1086,6 +1090,188 @@
             display: block;
         }
 
+        .game-window {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            margin-top: 8px;
+        }
+
+        .game-window-title {
+            background: #1a1a1a;
+            color: white;
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 6px 6px 0 0;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .game-window-title::before {
+            content: '🎨';
+        }
+
+        .game-panel {
+            background: var(--bg-surface);
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            padding: 8px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.3fr) minmax(220px, 0.7fr);
+            gap: 8px;
+            min-height: 0;
+        }
+
+        .game-canvas-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .game-canvas-toolbar {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .game-badge {
+            padding: 2px 6px;
+            font-size: 9px;
+            font-weight: 700;
+            background: var(--bg-window);
+            border: 1px solid var(--border);
+        }
+
+        .game-badge.active {
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        .game-canvas-board {
+            position: relative;
+            background: #fffdf6;
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            aspect-ratio: 16 / 9;
+            min-height: 220px;
+            overflow: hidden;
+        }
+
+        .game-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            touch-action: none;
+            cursor: crosshair;
+            background-image:
+                linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .game-canvas-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 253, 246, 0.78);
+            color: var(--text-secondary);
+            font-size: 11px;
+            line-height: 1.6;
+            pointer-events: none;
+        }
+
+        .game-side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .game-info-card {
+            background: var(--bg-window);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .game-info-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-secondary);
+        }
+
+        .game-status-text {
+            font-size: 11px;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        .game-prompt {
+            background: #fff;
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            padding: 8px;
+            font-size: 11px;
+            line-height: 1.5;
+            min-height: 48px;
+        }
+
+        .game-prompt strong {
+            color: var(--accent);
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .game-btn::before {
+            content: '▶ ';
+        }
+
+        .game-btn.secondary::before {
+            content: '↺ ';
+        }
+
+        .game-btn.reveal::before {
+            content: '👁 ';
+        }
+
+        .game-scoreboard {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .game-score-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 10px;
+            padding: 5px 6px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+        }
+
+        .game-score-row strong {
+            color: var(--accent);
+        }
+
         .messages-window {
             flex: 1;
             display: flex;
@@ -1552,6 +1738,14 @@
                 font-size: 9px;
             }
             
+            .game-panel {
+                grid-template-columns: 1fr;
+            }
+
+            .game-canvas-board {
+                min-height: 180px;
+            }
+
             .message {
                 max-width: 90%;
             }
@@ -1589,10 +1783,10 @@
     <div class="setup-screen" id="setupScreen">
         <div class="setup-content">
             <div class="setup-header">
-                <h1 class="setup-title">pochapochi</h1>
+                <h1 class="setup-title">Pocha Pochi</h1>
                 <p class="setup-description">
-                    This is a chat app using <strong>GunDB</strong>, a peer-to-peer decentralized database.
-                    Create a room, share the invite link, and chat directly with people who have the encrypted URL.
+                    Pocha Pochi is a social room app using <strong>GunDB</strong>, a peer-to-peer decentralized database.
+                    Create a room, share the invite link, and play or chat directly with people who have the encrypted URL.
                     <br><br>
                     <strong style="color: var(--success);">🔒 End-to-end encrypted</strong> – Only people with the invite link can read messages.
                 </p>
@@ -1646,7 +1840,7 @@
             <div class="retro-window-title">
                 <span class="retro-window-title-text">
                     <span>🦔</span>
-                    <span>P2P Chat Room</span>
+                    <span>Pocha Pochi</span>
                 </span>
             </div>
             
@@ -1708,11 +1902,48 @@
                 </div>
             </div>
             
+            <div class="game-window">
+                <div class="game-window-title">Pocha Pochi: Tebak Gambar</div>
+                <div class="game-panel">
+                    <div class="game-canvas-wrap">
+                        <div class="game-canvas-toolbar">
+                            <span class="game-badge" id="gameRoundBadge">Round idle</span>
+                            <span class="game-badge" id="gameRoleBadge">Viewer</span>
+                        </div>
+                        <div class="game-canvas-board">
+                            <canvas class="game-canvas" id="gameCanvas" width="960" height="540"></canvas>
+                            <div class="game-canvas-overlay" id="gameCanvasOverlay">Start a round to draw, guess in chat, and show the social game concept live.</div>
+                        </div>
+                    </div>
+                    <div class="game-side-panel">
+                        <div class="game-info-card">
+                            <div class="game-info-title">Round Status</div>
+                            <div class="game-status-text" id="gameStatusText">No round yet. Start one and become the first drawer.</div>
+                        </div>
+                        <div class="game-info-card">
+                            <div class="game-info-title">Prompt</div>
+                            <div class="game-prompt" id="gamePromptText">Waiting for the first round.</div>
+                            <div class="game-controls">
+                                <button class="retro-btn game-btn" id="gameStartBtn">Start Round</button>
+                                <button class="retro-btn game-btn secondary" id="gameClearBtn">Clear</button>
+                                <button class="retro-btn game-btn reveal" id="gameRevealBtn">Reveal</button>
+                            </div>
+                        </div>
+                        <div class="game-info-card">
+                            <div class="game-info-title">Scoreboard</div>
+                            <div class="game-scoreboard" id="gameScoreboard">
+                                <div class="game-score-row"><span>No players scored yet</span><strong>0</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="messages-window">
                 <div class="messages-window-title">Messages</div>
                 <div class="messages-container" id="messages">
                     <div class="empty-state" id="emptyState">
-                        Share the invite link to start chatting
+                        Share the invite link to start chatting in Pocha Pochi
                     </div>
                 </div>
                 
@@ -1770,7 +2001,7 @@
             <div class="username-dialog-header">Enter Username</div>
             <div class="username-dialog-body">
                 <div>
-                    <div class="username-dialog-label">Choose a name for this chat:</div>
+                    <div class="username-dialog-label">Choose a name for Pocha Pochi:</div>
                     <input type="text" class="username-dialog-input" id="usernameDialogInput" placeholder="username" maxlength="24" autocomplete="off" spellcheck="false">
                 </div>
                 <div class="username-dialog-footer">
@@ -2074,6 +2305,32 @@
         var myClientId = null;
         var gun = null;
         var AI_FEATURE_ENABLED = false;
+        var APP_VERSION = '20260309-0528';
+        var CACHE_BREAK_VERSION_KEY = 'POCHA_POCHI_APP_VERSION';
+        var GAME_STATE_KEY = 'game-state';
+        var GAME_VERSION = 1;
+        var DRAW_CANVAS_WIDTH = 960;
+        var DRAW_CANVAS_HEIGHT = 540;
+        var gameState = null;
+        var gameStateLoaded = false;
+        var gameCanvasCtx = null;
+        var isDrawing = false;
+        var lastDrawPoint = null;
+        var gameSyncTimer = null;
+        var gamePrompts = [
+            'sate ayam',
+            'soju bottle',
+            'fried chicken',
+            'karaoke mic',
+            'rainy umbrella',
+            'cat with sunglasses',
+            'cheers toast',
+            'spicy ramyeon',
+            'heart sunglasses',
+            'late night taxi',
+            'dance floor',
+            'street food cart'
+        ];
 
         var roomRef = null;
         var seenMessages = {};
@@ -2121,6 +2378,27 @@
                 result += chars[arr[i] % chars.length];
             }
             return result;
+        }
+
+        function applyCacheBreaker() {
+            var url = new URL(window.location.href);
+            var storedVersion = localStorage.getItem(CACHE_BREAK_VERSION_KEY);
+            var reloadGuardKey = CACHE_BREAK_VERSION_KEY + '_RELOADED_' + APP_VERSION;
+
+            if (url.searchParams.get('v') !== APP_VERSION) {
+                url.searchParams.set('v', APP_VERSION);
+                history.replaceState(null, '', url.pathname + '?' + url.searchParams.toString() + url.hash);
+            }
+
+            if (storedVersion && storedVersion !== APP_VERSION && sessionStorage.getItem(reloadGuardKey) !== '1') {
+                sessionStorage.setItem(reloadGuardKey, '1');
+                localStorage.setItem(CACHE_BREAK_VERSION_KEY, APP_VERSION);
+                window.location.replace(url.toString());
+                return true;
+            }
+
+            localStorage.setItem(CACHE_BREAK_VERSION_KEY, APP_VERSION);
+            return false;
         }
 
         function getRoomIdFromUrl() {
@@ -2352,6 +2630,378 @@
             // Legacy function - kept for compatibility
         }
 
+        function createBaseGameState() {
+            return {
+                version: GAME_VERSION,
+                phase: 'idle',
+                roundId: null,
+                drawerId: null,
+                drawerName: '',
+                prompt: '',
+                answerLength: 0,
+                answerRevealed: false,
+                solvedById: null,
+                solvedByName: '',
+                strokes: [],
+                scores: {},
+                updatedAt: Date.now()
+            };
+        }
+
+        function sanitizeGameState(raw) {
+            var next = createBaseGameState();
+            if (!raw || typeof raw !== 'object') {
+                return next;
+            }
+
+            next.phase = raw.phase || next.phase;
+            next.roundId = raw.roundId || next.roundId;
+            next.drawerId = raw.drawerId || next.drawerId;
+            next.drawerName = raw.drawerName || next.drawerName;
+            next.prompt = typeof raw.prompt === 'string' ? raw.prompt : next.prompt;
+            next.answerLength = typeof raw.answerLength === 'number' ? raw.answerLength : next.prompt.length;
+            next.answerRevealed = raw.answerRevealed === true;
+            next.solvedById = raw.solvedById || null;
+            next.solvedByName = raw.solvedByName || '';
+            next.strokes = Array.isArray(raw.strokes) ? raw.strokes : [];
+            next.scores = raw.scores && typeof raw.scores === 'object' ? raw.scores : {};
+            next.updatedAt = typeof raw.updatedAt === 'number' ? raw.updatedAt : Date.now();
+            return next;
+        }
+
+        function getDisplayNameForCurrentUser() {
+            var saved = roomId ? (localStorage.getItem(DISPLAY_NAME_KEY + roomId) || '') : '';
+            return saved || myId || 'Guest';
+        }
+
+        function normalizeGuess(text) {
+            return String(text || '')
+                .toLowerCase()
+                .replace(/[^a-z0-9\s]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function chooseRandomPrompt() {
+            return gamePrompts[Math.floor(Math.random() * gamePrompts.length)];
+        }
+
+        function canCurrentUserDraw() {
+            return !!(gameState && gameState.phase === 'drawing' && gameState.drawerId === myId);
+        }
+
+        function getScoreEntries() {
+            if (!gameState || !gameState.scores) return [];
+            var entries = [];
+            for (var userId in gameState.scores) {
+                if (Object.prototype.hasOwnProperty.call(gameState.scores, userId)) {
+                    var item = gameState.scores[userId] || {};
+                    entries.push({
+                        userId: userId,
+                        name: item.name || userId,
+                        score: typeof item.score === 'number' ? item.score : 0
+                    });
+                }
+            }
+            entries.sort(function(a, b) {
+                return b.score - a.score || a.name.localeCompare(b.name);
+            });
+            return entries;
+        }
+
+        function drawGameCanvas() {
+            if (!gameCanvasCtx) return;
+
+            gameCanvasCtx.clearRect(0, 0, DRAW_CANVAS_WIDTH, DRAW_CANVAS_HEIGHT);
+            if (!gameState || !Array.isArray(gameState.strokes)) return;
+
+            gameCanvasCtx.lineCap = 'round';
+            gameCanvasCtx.lineJoin = 'round';
+
+            for (var i = 0; i < gameState.strokes.length; i++) {
+                var stroke = gameState.strokes[i];
+                if (!stroke || !Array.isArray(stroke.points) || stroke.points.length === 0) continue;
+
+                gameCanvasCtx.beginPath();
+                gameCanvasCtx.strokeStyle = stroke.color || '#1a1a1a';
+                gameCanvasCtx.lineWidth = stroke.width || 6;
+                gameCanvasCtx.moveTo(stroke.points[0].x, stroke.points[0].y);
+
+                for (var j = 1; j < stroke.points.length; j++) {
+                    gameCanvasCtx.lineTo(stroke.points[j].x, stroke.points[j].y);
+                }
+
+                if (stroke.points.length === 1) {
+                    gameCanvasCtx.lineTo(stroke.points[0].x + 0.1, stroke.points[0].y + 0.1);
+                }
+
+                gameCanvasCtx.stroke();
+            }
+        }
+
+        function renderGame() {
+            var roundBadge = document.getElementById('gameRoundBadge');
+            var roleBadge = document.getElementById('gameRoleBadge');
+            var statusText = document.getElementById('gameStatusText');
+            var promptText = document.getElementById('gamePromptText');
+            var scoreboard = document.getElementById('gameScoreboard');
+            var overlay = document.getElementById('gameCanvasOverlay');
+            var startBtn = document.getElementById('gameStartBtn');
+            var clearBtn = document.getElementById('gameClearBtn');
+            var revealBtn = document.getElementById('gameRevealBtn');
+
+            if (!gameStateLoaded) {
+                statusText.textContent = 'Loading Pocha Pochi: Tebak Gambar...';
+                promptText.textContent = 'Waiting for game sync.';
+                overlay.textContent = 'Syncing the game room...';
+                roundBadge.textContent = 'Loading';
+                roleBadge.textContent = 'Viewer';
+                startBtn.disabled = true;
+                clearBtn.disabled = true;
+                revealBtn.disabled = true;
+                return;
+            }
+
+            var phase = gameState ? gameState.phase : 'idle';
+            var amDrawer = canCurrentUserDraw();
+            var normalizedPrompt = normalizeGuess(gameState ? gameState.prompt : '');
+            var scoreEntries = getScoreEntries();
+
+            roundBadge.textContent = phase === 'drawing' ? 'Round live' : (phase === 'solved' ? 'Round solved' : 'Round idle');
+            roundBadge.classList.toggle('active', phase === 'drawing');
+            roleBadge.textContent = amDrawer ? 'You are drawing' : (phase === 'drawing' ? 'You are guessing' : 'Viewer');
+            roleBadge.classList.toggle('active', amDrawer);
+
+            if (phase === 'idle') {
+                statusText.textContent = 'No round yet. Start a round and become the first drawer.';
+                promptText.textContent = 'Tap "Start Round" to pull a random prompt and begin drawing.';
+                overlay.textContent = 'Start a round to draw, guess in chat, and show the social game concept live.';
+            } else if (phase === 'drawing') {
+                statusText.textContent = amDrawer
+                    ? 'Draw the prompt clearly. Everyone else should guess it in the chat below.'
+                    : (gameState.drawerName || 'Someone') + ' is drawing. Guess the answer in chat.';
+                if (amDrawer) {
+                    promptText.innerHTML = 'Draw this: <strong>' + escapeHtml(gameState.prompt) + '</strong>';
+                } else {
+                    promptText.textContent = 'Guess the drawing. Answer length: ' + (gameState.answerLength || normalizedPrompt.length || '?') + ' characters.';
+                }
+                overlay.textContent = amDrawer ? '' : 'Watch the drawing update live, then type your guess in chat.';
+            } else {
+                statusText.textContent = (gameState.solvedByName || 'A player') + ' guessed it. Start the next round when you are ready.';
+                promptText.innerHTML = 'Answer: <strong>' + escapeHtml(gameState.prompt || 'unknown') + '</strong>';
+                overlay.textContent = 'Round complete. Start another round to keep the room going.';
+            }
+
+            overlay.style.display = overlay.textContent ? 'flex' : 'none';
+            startBtn.disabled = !encryptionReady || !roomRef;
+            startBtn.textContent = phase === 'idle' ? 'Start Round' : 'New Round';
+            clearBtn.disabled = !amDrawer;
+            revealBtn.disabled = !amDrawer;
+
+            if (!scoreEntries.length) {
+                scoreboard.innerHTML = '<div class="game-score-row"><span>No players scored yet</span><strong>0</strong></div>';
+            } else {
+                var html = '';
+                for (var i = 0; i < scoreEntries.length; i++) {
+                    html += '<div class="game-score-row"><span>' + escapeHtml(scoreEntries[i].name) + '</span><strong>' + scoreEntries[i].score + '</strong></div>';
+                }
+                scoreboard.innerHTML = html;
+            }
+
+            drawGameCanvas();
+        }
+
+        async function publishGameState(nextState) {
+            if (!roomRef || !encryptionReady) return;
+
+            var safeState = sanitizeGameState(nextState);
+            safeState.version = GAME_VERSION;
+            safeState.updatedAt = Date.now();
+
+            try {
+                var encrypted = await encryptMessage(JSON.stringify(safeState), GAME_STATE_KEY, safeState.updatedAt, myId);
+                roomRef.get('game').get('state').put({
+                    id: GAME_STATE_KEY,
+                    ts: safeState.updatedAt,
+                    sender: myId,
+                    v: 1,
+                    n: encrypted.n,
+                    ct: encrypted.ct
+                });
+
+                gameState = safeState;
+                gameStateLoaded = true;
+                renderGame();
+            } catch (e) {
+                console.error('Failed to publish game state:', e);
+                showToast('Game sync failed', true);
+            }
+        }
+
+        function scheduleGameStateSync() {
+            if (gameSyncTimer) return;
+            gameSyncTimer = setTimeout(function() {
+                gameSyncTimer = null;
+                publishGameState(gameState);
+            }, 120);
+        }
+
+        function getCanvasPoint(event) {
+            var canvas = document.getElementById('gameCanvas');
+            var rect = canvas.getBoundingClientRect();
+            var clientX = event.clientX;
+            var clientY = event.clientY;
+
+            if (event.touches && event.touches[0]) {
+                clientX = event.touches[0].clientX;
+                clientY = event.touches[0].clientY;
+            }
+
+            return {
+                x: Math.max(0, Math.min(DRAW_CANVAS_WIDTH, ((clientX - rect.left) / rect.width) * DRAW_CANVAS_WIDTH)),
+                y: Math.max(0, Math.min(DRAW_CANVAS_HEIGHT, ((clientY - rect.top) / rect.height) * DRAW_CANVAS_HEIGHT))
+            };
+        }
+
+        function beginStroke(event) {
+            if (!canCurrentUserDraw()) return;
+            event.preventDefault();
+
+            var point = getCanvasPoint(event);
+            var stroke = {
+                color: '#1a1a1a',
+                width: 6,
+                points: [point]
+            };
+
+            isDrawing = true;
+            lastDrawPoint = point;
+            gameState.strokes.push(stroke);
+            drawGameCanvas();
+            scheduleGameStateSync();
+        }
+
+        function moveStroke(event) {
+            if (!isDrawing || !canCurrentUserDraw()) return;
+            event.preventDefault();
+
+            var point = getCanvasPoint(event);
+            var activeStroke = gameState.strokes[gameState.strokes.length - 1];
+            if (!activeStroke) return;
+
+            if (lastDrawPoint && Math.abs(lastDrawPoint.x - point.x) < 1 && Math.abs(lastDrawPoint.y - point.y) < 1) {
+                return;
+            }
+
+            activeStroke.points.push(point);
+            lastDrawPoint = point;
+            drawGameCanvas();
+            scheduleGameStateSync();
+        }
+
+        function endStroke() {
+            if (!isDrawing) return;
+            isDrawing = false;
+            lastDrawPoint = null;
+            publishGameState(gameState);
+        }
+
+        function setupGameCanvas() {
+            var canvas = document.getElementById('gameCanvas');
+            if (!canvas || gameCanvasCtx) return;
+
+            gameCanvasCtx = canvas.getContext('2d');
+
+            canvas.addEventListener('pointerdown', beginStroke);
+            canvas.addEventListener('pointermove', moveStroke);
+            canvas.addEventListener('pointerup', endStroke);
+            canvas.addEventListener('pointerleave', endStroke);
+            canvas.addEventListener('pointercancel', endStroke);
+        }
+
+        function startNewRound() {
+            if (!roomRef || !encryptionReady) {
+                showToast('Room not ready yet', true);
+                return;
+            }
+
+            var nextState = sanitizeGameState(gameState);
+            nextState.phase = 'drawing';
+            nextState.roundId = 'round-' + generateSecureId(6);
+            nextState.drawerId = myId;
+            nextState.drawerName = getDisplayNameForCurrentUser();
+            nextState.prompt = chooseRandomPrompt();
+            nextState.answerLength = nextState.prompt.length;
+            nextState.answerRevealed = false;
+            nextState.solvedById = null;
+            nextState.solvedByName = '';
+            nextState.strokes = [];
+            publishGameState(nextState);
+        }
+
+        function clearCurrentDrawing() {
+            if (!canCurrentUserDraw()) return;
+            gameState.strokes = [];
+            publishGameState(gameState);
+        }
+
+        function revealCurrentAnswer() {
+            if (!canCurrentUserDraw()) return;
+            gameState.phase = 'solved';
+            gameState.answerRevealed = true;
+            gameState.solvedById = null;
+            gameState.solvedByName = 'No one';
+            publishGameState(gameState);
+        }
+
+        function maybeCompleteRoundFromGuess(rawText, senderId, senderName) {
+            if (!gameState || gameState.phase !== 'drawing') return;
+            if (senderId === gameState.drawerId) return;
+
+            var guess = normalizeGuess(rawText);
+            var answer = normalizeGuess(gameState.prompt);
+            if (!guess || !answer || guess !== answer) return;
+            if (gameState.solvedById) return;
+
+            var nextState = sanitizeGameState(gameState);
+            nextState.phase = 'solved';
+            nextState.answerRevealed = true;
+            nextState.solvedById = senderId;
+            nextState.solvedByName = senderName || senderId;
+
+            if (!nextState.scores[nextState.drawerId]) {
+                nextState.scores[nextState.drawerId] = { name: nextState.drawerName || nextState.drawerId, score: 0 };
+            }
+            if (!nextState.scores[senderId]) {
+                nextState.scores[senderId] = { name: senderName || senderId, score: 0 };
+            }
+
+            nextState.scores[nextState.drawerId].name = nextState.drawerName || nextState.drawerId;
+            nextState.scores[senderId].name = senderName || senderId;
+            nextState.scores[nextState.drawerId].score += 1;
+            nextState.scores[senderId].score += 2;
+
+            publishGameState(nextState);
+            showToast((senderName || 'Someone') + ' guessed it!', false);
+        }
+
+        async function handleIncomingGameState(data) {
+            if (!data || typeof data !== 'object' || data.id !== GAME_STATE_KEY) return;
+
+            if (!encryptionReady || data.v !== 1 || !data.n || !data.ct || !data.sender || typeof data.ts !== 'number') {
+                return;
+            }
+
+            try {
+                var decryptedJson = await decryptMessage(data.n, data.ct, data.id, data.ts, data.sender);
+                gameState = sanitizeGameState(JSON.parse(decryptedJson));
+                gameStateLoaded = true;
+                renderGame();
+            } catch (e) {
+                console.error('Failed to decrypt game state:', e);
+            }
+        }
+
         // ===== SHARE DIALOG =====
         var shareDialogQrGenerated = false;
 
@@ -2530,6 +3180,9 @@
         document.getElementById('shareBtn').onclick = openShareDialog;
         document.getElementById('shareDialogClose').onclick = closeShareDialog;
         document.getElementById('shareCopyBtn').onclick = copyShareLink;
+        document.getElementById('gameStartBtn').onclick = startNewRound;
+        document.getElementById('gameClearBtn').onclick = clearCurrentDrawing;
+        document.getElementById('gameRevealBtn').onclick = revealCurrentAnswer;
 
         // Close on overlay click
         document.getElementById('shareDialogOverlay').onclick = function(e) {
@@ -3366,6 +4019,7 @@
                 messagesArray.push(localMsg);
                 addToContextBuffer(localMsg);
                 renderMessages();
+                maybeCompleteRoundFromGuess(text, myId, displayName || myId);
                 
                 // Store encrypted message
                 roomRef.get('messages').get(msgId).put({
@@ -3489,6 +4143,7 @@
                     }
                     
                     renderMessages();
+                    maybeCompleteRoundFromGuess(decrypted.text, data.sender, shownName);
                     
                     // Play sound for remote messages
                     if (data.sender !== myId) {
@@ -3542,7 +4197,12 @@
         // ===== INITIALIZATION =====
 
         async function boot() {
+            if (applyCacheBreaker()) return;
             applyAiDisabledState();
+            setupGameCanvas();
+            gameState = createBaseGameState();
+            gameStateLoaded = false;
+            renderGame();
             // Show username dialog first, defer GunDB connection
             pendingBoot = true;
             showUsernameDialog();
@@ -3809,6 +4469,10 @@
             
             // Get room reference
             roomRef = gun.get('simplechat').get(roomId);
+            gameStateLoaded = true;
+            renderGame();
+
+            roomRef.get('game').get('state').on(handleIncomingGameState);
             
             // Subscribe to messages using .once() first for initial load,
             // then .on() for real-time updates. This prevents GunDB's
