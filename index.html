@@ -1132,6 +1132,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
             width: 100%;
         }
 
@@ -1176,6 +1178,73 @@
             color: var(--text-secondary);
             max-width: 100px;
             line-height: 1.4;
+        }
+
+        .game-detail-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 6px 8px;
+            background: var(--bg-window);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            border-bottom: none;
+        }
+
+        .game-detail-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .game-detail-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .game-detail-action {
+            padding: 4px 8px;
+            font-size: 9px;
+        }
+
+        .iframe-game-shell {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            height: 100%;
+        }
+
+        .iframe-game-frame-wrap {
+            background: #061018;
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            min-height: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .iframe-game-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #061018;
+            display: block;
+        }
+
+        .game-window.maximized {
+            position: fixed;
+            inset: 8px;
+            z-index: 20000;
+            margin-top: 0;
+            max-height: none;
+            height: auto;
+            flex: none;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.35);
         }
 
         .game-detail.hidden,
@@ -1876,6 +1945,10 @@
                 padding: 8px;
             }
 
+            .games-grid {
+                gap: 10px;
+            }
+
             .game-launcher-card {
                 width: 108px;
                 min-height: 108px;
@@ -1891,6 +1964,24 @@
             }
 
             .game-launcher-subtitle {
+                font-size: 8px;
+            }
+
+            .game-detail-header {
+                padding: 4px 6px;
+                gap: 6px;
+            }
+
+            .game-detail-title {
+                font-size: 9px;
+            }
+
+            .game-detail-actions {
+                gap: 4px;
+            }
+
+            .game-detail-action {
+                padding: 3px 6px;
                 font-size: 8px;
             }
 
@@ -1965,6 +2056,10 @@
                 flex: 1 1 auto;
                 min-height: 34dvh;
                 margin-top: 6px;
+            }
+
+            .game-window.maximized {
+                inset: 4px;
             }
 
             .messages-container {
@@ -2155,9 +2250,20 @@
                             <div class="game-launcher-name">Tebak Gambar</div>
                             <div class="game-launcher-subtitle">Draw, guess, and play with the room.</div>
                         </button>
+                        <button class="game-launcher-card" id="launchKapalIkanBtn" type="button">
+                            <div class="game-launcher-icon">🐟</div>
+                            <div class="game-launcher-name">Kapal Ikan</div>
+                            <div class="game-launcher-subtitle">Open the fishing game in a live room iframe.</div>
+                        </button>
                     </div>
                 </div>
                 <div class="game-detail hidden" id="gameDetail">
+                    <div class="game-detail-header">
+                        <div class="game-detail-title">Pocha Pochi: Tebak Gambar</div>
+                        <div class="game-detail-actions">
+                            <button class="retro-btn game-detail-action" id="backToGamesFromTebakBtn" type="button">Back</button>
+                        </div>
+                    </div>
                     <div class="game-panel">
                         <div class="game-canvas-wrap">
                             <div class="game-canvas-toolbar">
@@ -2189,6 +2295,27 @@
                                     <div class="game-score-row"><span>No players scored yet</span><strong>0</strong></div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="game-detail hidden" id="iframeGameDetail">
+                    <div class="game-detail-header">
+                        <div class="game-detail-title">Kapal Ikan</div>
+                        <div class="game-detail-actions">
+                            <button class="retro-btn game-detail-action" id="backToGamesFromIframeBtn" type="button">Back</button>
+                            <button class="retro-btn game-detail-action" id="toggleIframeMaximizeBtn" type="button">Maximize</button>
+                        </div>
+                    </div>
+                    <div class="iframe-game-shell">
+                        <div class="iframe-game-frame-wrap">
+                            <iframe
+                                class="iframe-game-frame"
+                                id="kapalIkanIframe"
+                                title="Kapal Ikan"
+                                loading="lazy"
+                                allowfullscreen
+                                src=""
+                            ></iframe>
                         </div>
                     </div>
                 </div>
@@ -2562,6 +2689,7 @@
         var AI_FEATURE_ENABLED = false;
         var APP_VERSION = '20260309-0528';
         var CACHE_BREAK_VERSION_KEY = 'POCHA_POCHI_APP_VERSION';
+        var KAPAL_IKAN_URL = 'https://oceanshader.berrry.app/';
         var GAME_STATE_KEY = 'game-state';
         var GAME_VERSION = 1;
         var DRAW_CANVAS_WIDTH = 960;
@@ -2574,6 +2702,7 @@
         var gameStateLoaded = false;
         var gameCanvasCtx = null;
         var activeGameId = null;
+        var iframeGameMaximized = false;
         var isDrawing = false;
         var lastDrawPoint = null;
         var gameSyncTimer = null;
@@ -2953,17 +3082,45 @@
         function openGame(gameId) {
             activeGameId = gameId;
             var launcher = document.getElementById('gamesLauncher');
-            var detail = document.getElementById('gameDetail');
+            var tebakDetail = document.getElementById('gameDetail');
+            var iframeDetail = document.getElementById('iframeGameDetail');
+            var gameWindow = document.querySelector('.game-window');
 
             if (launcher) {
-                launcher.classList.toggle('hidden', gameId === 'tebak-gambar');
+                launcher.classList.toggle('hidden', gameId === 'tebak-gambar' || gameId === 'kapal-ikan');
             }
 
-            if (detail) {
-                detail.classList.toggle('hidden', gameId !== 'tebak-gambar');
+            if (tebakDetail) {
+                tebakDetail.classList.toggle('hidden', gameId !== 'tebak-gambar');
+            }
+
+            if (iframeDetail) {
+                iframeDetail.classList.toggle('hidden', gameId !== 'kapal-ikan');
+            }
+
+            if (gameWindow && gameId !== 'kapal-ikan') {
+                iframeGameMaximized = false;
+                gameWindow.classList.remove('maximized');
+                updateIframeGameControls();
             }
 
             renderGame();
+        }
+
+        function updateIframeGameControls() {
+            var toggleBtn = document.getElementById('toggleIframeMaximizeBtn');
+            if (!toggleBtn) return;
+            toggleBtn.textContent = iframeGameMaximized ? 'Restore' : 'Maximize';
+        }
+
+        function toggleIframeGameMaximize() {
+            if (activeGameId !== 'kapal-ikan') return;
+            var gameWindow = document.querySelector('.game-window');
+            if (!gameWindow) return;
+
+            iframeGameMaximized = !iframeGameMaximized;
+            gameWindow.classList.toggle('maximized', iframeGameMaximized);
+            updateIframeGameControls();
         }
 
         function canCurrentUserDraw() {
@@ -3467,6 +3624,16 @@
         document.getElementById('launchTebakGambarBtn').onclick = function() {
             openGame('tebak-gambar');
         };
+        document.getElementById('launchKapalIkanBtn').onclick = function() {
+            openGame('kapal-ikan');
+        };
+        document.getElementById('backToGamesFromTebakBtn').onclick = function() {
+            openGame(null);
+        };
+        document.getElementById('backToGamesFromIframeBtn').onclick = function() {
+            openGame(null);
+        };
+        document.getElementById('toggleIframeMaximizeBtn').onclick = toggleIframeGameMaximize;
         document.getElementById('gameStartBtn').onclick = startNewRound;
         document.getElementById('gameClearBtn').onclick = clearCurrentDrawing;
         document.getElementById('gameRevealBtn').onclick = revealCurrentAnswer;
@@ -4489,6 +4656,7 @@
             setupGameCanvas();
             gameState = createBaseGameState();
             gameStateLoaded = false;
+            document.getElementById('kapalIkanIframe').src = KAPAL_IKAN_URL;
             openGame(null);
             renderGame();
             // Show username dialog first, defer GunDB connection
