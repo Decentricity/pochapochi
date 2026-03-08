@@ -3215,7 +3215,7 @@
                 activeIframeGame = 'chordynaut';
                 title.textContent = 'Chordynaut';
                 iframe.title = 'Chordynaut';
-                iframe.src = CHORDYNAUT_URL;
+                iframe.src = CHORDYNAUT_URL + '?embedMode=' + (iframeGameMaximized ? 'maximized' : 'square');
                 return;
             }
 
@@ -3232,12 +3232,18 @@
         }
 
         function toggleIframeGameMaximize() {
-            if (activeGameId !== 'kapal-ikan') return;
+            if (activeGameId !== 'kapal-ikan' && activeGameId !== 'tiny-racers' && activeGameId !== 'chordynaut') return;
             var gameWindow = document.querySelector('.game-window');
+            var iframe = document.getElementById('kapalIkanIframe');
             if (!gameWindow) return;
 
             iframeGameMaximized = !iframeGameMaximized;
             gameWindow.classList.toggle('maximized', iframeGameMaximized);
+
+            if (activeIframeGame === 'chordynaut' && iframe) {
+                iframe.src = CHORDYNAUT_URL + '?embedMode=' + (iframeGameMaximized ? 'maximized' : 'square');
+            }
+
             updateIframeGameControls();
         }
 
