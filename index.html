@@ -1140,20 +1140,48 @@
             background: var(--bg-surface);
             border: 2px solid;
             border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
-            padding: 14px;
+            padding: 14px 14px 10px;
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            align-items: stretch;
             justify-content: center;
             min-height: 180px;
+            gap: 8px;
         }
 
         .games-grid {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 16px;
-            flex-wrap: wrap;
-            width: 100%;
+            flex-wrap: nowrap;
+            width: max-content;
+            min-width: 100%;
+        }
+
+        .games-scroll {
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            padding-bottom: 4px;
+        }
+
+        .games-scroll::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .games-scroll::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 999px;
+        }
+
+        .games-scroll-hint {
+            align-self: center;
+            font-size: 9px;
+            color: var(--text-secondary);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
         }
 
         .game-launcher-card {
@@ -1975,6 +2003,10 @@
                 padding: 8px;
             }
 
+            .games-scroll {
+                padding-bottom: 2px;
+            }
+
             .games-grid {
                 gap: 10px;
             }
@@ -1994,6 +2026,10 @@
             }
 
             .game-launcher-subtitle {
+                font-size: 8px;
+            }
+
+            .games-scroll-hint {
                 font-size: 8px;
             }
 
@@ -2269,23 +2305,31 @@
             <div class="game-window">
                 <div class="game-window-title">Games</div>
                 <div class="games-launcher" id="gamesLauncher">
-                    <div class="games-grid">
-                        <button class="game-launcher-card" id="launchTebakGambarBtn" type="button">
-                            <div class="game-launcher-icon">🎨</div>
-                            <div class="game-launcher-name">Tebak Gambar</div>
-                            <div class="game-launcher-subtitle">Draw, guess, and play with the room.</div>
-                        </button>
-                        <button class="game-launcher-card" id="launchKapalIkanBtn" type="button">
-                            <div class="game-launcher-icon">🐟</div>
-                            <div class="game-launcher-name">Kapal Ikan</div>
-                            <div class="game-launcher-subtitle">Open the fishing game in a live room iframe.</div>
-                        </button>
-                        <button class="game-launcher-card" id="launchTinyRacersBtn" type="button">
-                            <div class="game-launcher-icon">🚗</div>
-                            <div class="game-launcher-name">Tiny Racers</div>
-                            <div class="game-launcher-subtitle">Open the racing game in a live room iframe.</div>
-                        </button>
+                    <div class="games-scroll">
+                        <div class="games-grid">
+                            <button class="game-launcher-card" id="launchTebakGambarBtn" type="button">
+                                <div class="game-launcher-icon">🎨</div>
+                                <div class="game-launcher-name">Tebak Gambar</div>
+                                <div class="game-launcher-subtitle">Draw, guess, and play with the room.</div>
+                            </button>
+                            <button class="game-launcher-card" id="launchKapalIkanBtn" type="button">
+                                <div class="game-launcher-icon">🐟</div>
+                                <div class="game-launcher-name">Kapal Ikan</div>
+                                <div class="game-launcher-subtitle">Open the fishing game in a live room iframe.</div>
+                            </button>
+                            <button class="game-launcher-card" id="launchTinyRacersBtn" type="button">
+                                <div class="game-launcher-icon">🚗</div>
+                                <div class="game-launcher-name">Tiny Racers</div>
+                                <div class="game-launcher-subtitle">Open the racing game in a live room iframe.</div>
+                            </button>
+                            <button class="game-launcher-card" id="launchChordynautBtn" type="button">
+                                <div class="game-launcher-icon">🎵</div>
+                                <div class="game-launcher-name">Chordynaut</div>
+                                <div class="game-launcher-subtitle">Play music with your friends.</div>
+                            </button>
+                        </div>
                     </div>
+                    <div class="games-scroll-hint">Swipe for more games</div>
                 </div>
                 <div class="game-detail hidden" id="gameDetail">
                     <div class="game-detail-header">
@@ -2724,6 +2768,7 @@
         var CACHE_BREAK_VERSION_KEY = 'POCHA_POCHI_APP_VERSION';
         var KAPAL_IKAN_URL = 'https://oceanshader.berrry.app/';
         var TINY_RACERS_URL = 'https://tinyracers.berrry.app/';
+        var CHORDYNAUT_URL = 'https://chordynaut.berrry.app/';
         var GAME_STATE_KEY = 'game-state';
         var GAME_VERSION = 1;
         var DRAW_CANVAS_WIDTH = 960;
@@ -3129,7 +3174,7 @@
             var chatMainWindow = document.querySelector('.chat-main-window');
 
             if (launcher) {
-                launcher.classList.toggle('hidden', gameId === 'tebak-gambar' || gameId === 'kapal-ikan' || gameId === 'tiny-racers');
+                launcher.classList.toggle('hidden', gameId === 'tebak-gambar' || gameId === 'kapal-ikan' || gameId === 'tiny-racers' || gameId === 'chordynaut');
             }
 
             if (tebakDetail) {
@@ -3137,7 +3182,7 @@
             }
 
             if (iframeDetail) {
-                iframeDetail.classList.toggle('hidden', gameId !== 'kapal-ikan' && gameId !== 'tiny-racers');
+                iframeDetail.classList.toggle('hidden', gameId !== 'kapal-ikan' && gameId !== 'tiny-racers' && gameId !== 'chordynaut');
             }
 
             if (gameWindow && gameId !== 'kapal-ikan') {
@@ -3163,6 +3208,14 @@
                 title.textContent = 'Tiny Racers';
                 iframe.title = 'Tiny Racers';
                 iframe.src = TINY_RACERS_URL;
+                return;
+            }
+
+            if (gameId === 'chordynaut') {
+                activeIframeGame = 'chordynaut';
+                title.textContent = 'Chordynaut';
+                iframe.title = 'Chordynaut';
+                iframe.src = CHORDYNAUT_URL;
                 return;
             }
 
@@ -3696,6 +3749,10 @@
         document.getElementById('launchTinyRacersBtn').onclick = function() {
             configureIframeGame('tiny-racers');
             openGame('tiny-racers');
+        };
+        document.getElementById('launchChordynautBtn').onclick = function() {
+            configureIframeGame('chordynaut');
+            openGame('chordynaut');
         };
         document.getElementById('backToGamesFromTebakBtn').onclick = function() {
             openGame(null);
