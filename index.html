@@ -2280,6 +2280,11 @@
                             <div class="game-launcher-name">Kapal Ikan</div>
                             <div class="game-launcher-subtitle">Open the fishing game in a live room iframe.</div>
                         </button>
+                        <button class="game-launcher-card" id="launchTinyRacersBtn" type="button">
+                            <div class="game-launcher-icon">🚗</div>
+                            <div class="game-launcher-name">Tiny Racers</div>
+                            <div class="game-launcher-subtitle">Open the racing game in a live room iframe.</div>
+                        </button>
                     </div>
                 </div>
                 <div class="game-detail hidden" id="gameDetail">
@@ -2325,7 +2330,7 @@
                 </div>
                 <div class="game-detail hidden" id="iframeGameDetail">
                     <div class="game-detail-header">
-                        <div class="game-detail-title">Kapal Ikan</div>
+                        <div class="game-detail-title" id="iframeGameTitle">Kapal Ikan</div>
                         <div class="game-detail-actions">
                             <button class="retro-btn game-detail-action" id="backToGamesFromIframeBtn" type="button">Back</button>
                             <button class="retro-btn game-detail-action" id="toggleIframeMaximizeBtn" type="button">Maximize</button>
@@ -2718,6 +2723,7 @@
         var APP_VERSION = '20260309-0528';
         var CACHE_BREAK_VERSION_KEY = 'POCHA_POCHI_APP_VERSION';
         var KAPAL_IKAN_URL = 'https://oceanshader.berrry.app/';
+        var TINY_RACERS_URL = 'https://tinyracers.berrry.app/';
         var GAME_STATE_KEY = 'game-state';
         var GAME_VERSION = 1;
         var DRAW_CANVAS_WIDTH = 960;
@@ -2730,6 +2736,7 @@
         var gameStateLoaded = false;
         var gameCanvasCtx = null;
         var activeGameId = null;
+        var activeIframeGame = null;
         var iframeGameMaximized = false;
         var isDrawing = false;
         var lastDrawPoint = null;
@@ -3122,7 +3129,7 @@
             var chatMainWindow = document.querySelector('.chat-main-window');
 
             if (launcher) {
-                launcher.classList.toggle('hidden', gameId === 'tebak-gambar' || gameId === 'kapal-ikan');
+                launcher.classList.toggle('hidden', gameId === 'tebak-gambar' || gameId === 'kapal-ikan' || gameId === 'tiny-racers');
             }
 
             if (tebakDetail) {
@@ -3130,7 +3137,7 @@
             }
 
             if (iframeDetail) {
-                iframeDetail.classList.toggle('hidden', gameId !== 'kapal-ikan');
+                iframeDetail.classList.toggle('hidden', gameId !== 'kapal-ikan' && gameId !== 'tiny-racers');
             }
 
             if (gameWindow && gameId !== 'kapal-ikan') {
@@ -3144,6 +3151,25 @@
             }
 
             renderGame();
+        }
+
+        function configureIframeGame(gameId) {
+            var iframe = document.getElementById('kapalIkanIframe');
+            var title = document.getElementById('iframeGameTitle');
+            if (!iframe || !title) return;
+
+            if (gameId === 'tiny-racers') {
+                activeIframeGame = 'tiny-racers';
+                title.textContent = 'Tiny Racers';
+                iframe.title = 'Tiny Racers';
+                iframe.src = TINY_RACERS_URL;
+                return;
+            }
+
+            activeIframeGame = 'kapal-ikan';
+            title.textContent = 'Kapal Ikan';
+            iframe.title = 'Kapal Ikan';
+            iframe.src = KAPAL_IKAN_URL;
         }
 
         function updateIframeGameControls() {
@@ -3664,7 +3690,12 @@
             openGame('tebak-gambar');
         };
         document.getElementById('launchKapalIkanBtn').onclick = function() {
+            configureIframeGame('kapal-ikan');
             openGame('kapal-ikan');
+        };
+        document.getElementById('launchTinyRacersBtn').onclick = function() {
+            configureIframeGame('tiny-racers');
+            openGame('tiny-racers');
         };
         document.getElementById('backToGamesFromTebakBtn').onclick = function() {
             openGame(null);
@@ -4695,7 +4726,7 @@
             setupGameCanvas();
             gameState = createBaseGameState();
             gameStateLoaded = false;
-            document.getElementById('kapalIkanIframe').src = KAPAL_IKAN_URL;
+            configureIframeGame('kapal-ikan');
             openGame(null);
             renderGame();
             // Show username dialog first, defer GunDB connection
