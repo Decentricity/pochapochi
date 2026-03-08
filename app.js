@@ -1,0 +1,1 @@
+// This file is not used - all code is in index.html for single-file simplicity

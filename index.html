@@ -1,0 +1,3853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+    <meta name="description" content="End-to-end encrypted peer-to-peer chat powered by GunDB">
+    <title>pochapochi</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-light: #f0f0f0;
+            --bg-surface: #ffffff;
+            --bg-elevated: #e8e8e8;
+            --bg-window: #c0c0c0;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --accent: #0066cc;
+            --accent-dim: #004d99;
+            --success: #228b22;
+            --warning: #cc7700;
+            --error: #cc2222;
+            --border: #808080;
+            --border-light: #dfdfdf;
+            --border-dark: #404040;
+            --code-bg: #ffffff;
+            --ai-color: #6b238e;
+            --encrypted: #228b22;
+            --window-title: #000080;
+            --window-title-inactive: #808080;
+            --highlight: #000080;
+            --highlight-text: #ffffff;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'IBM Plex Mono', monospace;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            font-size: 12px;
+        }
+
+        /* ===== RETRO WINDOW STYLES ===== */
+        .retro-window {
+            background: var(--bg-window);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+        }
+
+        .retro-window-title {
+            background: #1a1a1a;
+            color: white;
+            padding: 4px 8px;
+            font-weight: 600;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .retro-window-title-text {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .retro-window-title-icon {
+            width: 14px;
+            height: 14px;
+        }
+
+        .retro-window-buttons {
+            display: flex;
+            gap: 2px;
+        }
+
+        .retro-btn {
+            background: linear-gradient(to bottom, #f5f5f5 0%, #e0e0e0 100%);
+            border: 1px solid #a0a0a0;
+            border-radius: 4px;
+            padding: 5px 14px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--text-primary);
+            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            transition: background 0.1s, box-shadow 0.1s;
+        }
+
+        .retro-btn:hover {
+            background: linear-gradient(to bottom, #ffffff 0%, #e8e8e8 100%);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        }
+
+        .retro-btn:active {
+            background: linear-gradient(to bottom, #d0d0d0 0%, #c0c0c0 100%);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.15);
+        }
+
+        .retro-btn-primary {
+            background: linear-gradient(to bottom, #f5f5f5 0%, #e0e0e0 100%);
+            font-weight: 700;
+        }
+
+        .retro-inset {
+            background: var(--bg-surface);
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+        }
+
+        .retro-input {
+            background: var(--bg-surface);
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            padding: 4px 6px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .retro-input:focus {
+            outline: 1px dotted var(--text-primary);
+            outline-offset: -3px;
+        }
+
+        .retro-select {
+            background: var(--bg-surface);
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            padding: 2px 4px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        /* ===== SETUP SCREEN ===== */
+        .setup-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-light);
+            z-index: 9999;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        .setup-screen.hidden {
+            display: none;
+        }
+
+        .setup-content {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .setup-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .setup-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .setup-title::before {
+            content: '🦔';
+        }
+
+        .setup-description {
+            color: var(--text-secondary);
+            font-size: 11px;
+            line-height: 1.7;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .setup-description strong {
+            color: var(--text-primary);
+        }
+
+        .setup-blocks {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 700px) {
+            .setup-blocks {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .setup-block {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .setup-block-title {
+            background: #1a1a1a;
+            color: white;
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .setup-block-title::before {
+            content: '📄';
+            font-size: 12px;
+        }
+
+        .setup-block-content {
+            background: var(--bg-window);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            border-top: none;
+            padding: 8px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .setup-code-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .setup-code {
+            background: var(--bg-surface);
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            padding: 8px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            line-height: 1.5;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            word-break: break-all;
+            overflow-x: auto;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .setup-copy-btn {
+            margin-top: 8px;
+            align-self: flex-start;
+        }
+
+        .setup-copy-btn::before {
+            content: '📋 ';
+        }
+
+        .setup-copy-btn.copied::before {
+            content: '✓ ';
+        }
+
+        .setup-fallback-textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 6px;
+            background: var(--bg-surface);
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            padding: 6px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9px;
+            color: var(--text-primary);
+            resize: none;
+        }
+
+        .setup-fallback-hint {
+            font-size: 10px;
+            color: var(--warning);
+            margin-top: 4px;
+        }
+
+        .setup-note {
+            background: var(--bg-surface);
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            padding: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .setup-note::before {
+            content: '⚠️ ';
+        }
+
+        .setup-note code {
+            background: var(--bg-elevated);
+            padding: 1px 4px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            color: var(--accent);
+        }
+
+        .setup-cta {
+            display: flex;
+            justify-content: center;
+        }
+
+        .setup-cta-btn {
+            font-size: 12px;
+            padding: 6px 20px;
+        }
+
+        .setup-cta-btn::before {
+            content: '▶ ';
+        }
+
+        /* ===== CHAT UI ===== */
+        .chat-app {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 8px;
+        }
+
+        .chat-app.hidden {
+            display: none;
+        }
+
+        .chat-main-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .error-banner {
+            background: var(--error);
+            color: white;
+            padding: 6px 8px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            display: none;
+            margin-bottom: 8px;
+        }
+
+        .error-banner::before {
+            content: '❌ ';
+        }
+
+        .error-banner.visible {
+            display: block;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 8px;
+            background: var(--bg-window);
+            flex-shrink: 0;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .invite-section {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .invite-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .share-btn::before {
+            content: '📤 ';
+        }
+
+        /* Share Dialog */
+        .share-dialog-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+        }
+
+        .share-dialog-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .share-dialog {
+            max-width: 340px;
+            width: 100%;
+        }
+
+        .share-dialog-header {
+            background: #1a1a1a;
+            color: white;
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .share-dialog-title {
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .share-dialog-title::before {
+            content: '🔗';
+        }
+
+        .share-dialog-close {
+            background: var(--bg-window);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 0 4px;
+            font-size: 10px;
+            font-weight: 700;
+            font-family: 'IBM Plex Mono', monospace;
+            line-height: 1;
+        }
+
+        .share-dialog-close:active {
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+        }
+
+        .share-dialog-content {
+            background: var(--bg-window);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            border-top: none;
+            padding: 12px;
+        }
+
+        .share-qr-container {
+            background: white;
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .share-qr-container canvas {
+            display: block;
+        }
+
+        .share-qr-hint {
+            text-align: center;
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .share-link-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .share-link-input {
+            flex: 1;
+            font-size: 9px;
+            min-width: 0;
+        }
+
+        .share-copy-btn::before {
+            content: '📋 ';
+        }
+
+        .share-copy-btn.copied::before {
+            content: '✓ ';
+        }
+
+        .share-security-note {
+            background: var(--bg-surface);
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            padding: 6px;
+            font-size: 9px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .share-security-note::before {
+            content: '🔒 ';
+        }
+
+        .share-security-note svg {
+            display: none;
+        }
+
+        /* ===== AI PROMPT DIALOG ===== */
+        .ai-prompt-dialog-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .ai-prompt-dialog-overlay.hidden {
+            display: none;
+        }
+
+        .ai-prompt-dialog {
+            background: var(--bg-window);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+            width: 340px;
+            max-width: 90vw;
+        }
+
+        .ai-prompt-dialog-header {
+            background: linear-gradient(90deg, var(--ai-color), #4a1a6b);
+            color: white;
+            padding: 3px 6px;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ai-prompt-dialog-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ai-prompt-dialog-title::before {
+            content: '🤖';
+            font-size: 12px;
+        }
+
+        .ai-prompt-dialog-close {
+            background: var(--bg-window);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 0 4px;
+            font-size: 10px;
+            font-weight: 700;
+            font-family: 'IBM Plex Mono', monospace;
+            line-height: 1;
+        }
+
+        .ai-prompt-dialog-close:active {
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+        }
+
+        .ai-prompt-dialog-body {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ai-prompt-dialog-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        .ai-prompt-dialog-textarea {
+            width: 100%;
+            height: 120px;
+            background: var(--bg-surface);
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            padding: 6px 8px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--text-primary);
+            outline: none;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        .ai-prompt-dialog-textarea:focus {
+            outline: 1px dotted var(--text-primary);
+            outline-offset: -3px;
+        }
+
+        .ai-prompt-dialog-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .ai-prompt-dialog-btn {
+            background: linear-gradient(to bottom, #f5f5f5 0%, #e0e0e0 100%);
+            border: 1px solid #a0a0a0;
+            border-radius: 4px;
+            padding: 4px 12px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        .ai-prompt-dialog-btn:hover {
+            background: linear-gradient(to bottom, #ffffff 0%, #e8e8e8 100%);
+        }
+
+        .ai-prompt-dialog-btn:active {
+            background: linear-gradient(to bottom, #d0d0d0 0%, #c0c0c0 100%);
+        }
+
+        .ai-prompt-dialog-btn.primary {
+            font-weight: 700;
+        }
+
+        .ai-customize-btn {
+            background: linear-gradient(to bottom, #f5f5f5 0%, #e0e0e0 100%);
+            border: 1px solid #a0a0a0;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            margin-left: auto;
+        }
+
+        .ai-customize-btn:hover {
+            background: linear-gradient(to bottom, #ffffff 0%, #e8e8e8 100%);
+            color: var(--text-primary);
+        }
+
+        /* ===== USERNAME DIALOG ===== */
+        .username-dialog-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .username-dialog-overlay.hidden {
+            display: none;
+        }
+
+        .username-dialog {
+            background: var(--bg-window);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+            width: 260px;
+        }
+
+        .username-dialog-header {
+            background: #000080;
+            color: white;
+            padding: 3px 6px;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .username-dialog-header::before {
+            content: '🦔';
+            font-size: 12px;
+        }
+
+        .username-dialog-body {
+            padding: 16px 12px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .username-dialog-label {
+            font-size: 11px;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .username-dialog-input {
+            width: 100%;
+            background: var(--bg-surface);
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            padding: 6px 8px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .username-dialog-input:focus {
+            outline: 1px dotted var(--text-primary);
+            outline-offset: -3px;
+        }
+
+        .username-dialog-footer {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .username-dialog-btn {
+            background: linear-gradient(to bottom, #f5f5f5 0%, #e0e0e0 100%);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            padding: 4px 20px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        .username-dialog-btn:hover {
+            background: linear-gradient(to bottom, #ffffff 0%, #e8e8e8 100%);
+        }
+
+        .username-dialog-btn:active {
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            background: linear-gradient(to bottom, #d0d0d0 0%, #c0c0c0 100%);
+        }
+
+        .username-dialog-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .setup-link-btn::before {
+            content: '⚙️ ';
+        }
+
+        .invite-input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            flex: 1;
+        }
+
+        .invite-input {
+            width: 100%;
+            font-size: 9px;
+        }
+
+        .invite-hint {
+            font-size: 9px;
+            color: var(--text-secondary);
+            display: none;
+        }
+
+        .invite-hint.visible {
+            display: block;
+        }
+
+        .display-name-row {
+            margin-top: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .display-name-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .display-name-label::before {
+            content: '👤 ';
+        }
+
+        .display-name-hint {
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        .display-name-input-row {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .display-name-input {
+            flex: 1;
+            font-size: 10px;
+            min-width: 0;
+        }
+
+        .display-name-input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        .display-name-save-btn {
+            font-size: 10px;
+            padding: 3px 8px;
+        }
+
+        .display-name-save-btn::before {
+            content: '💾 ';
+        }
+
+        .display-name-save-btn.saved::before {
+            content: '✓ ';
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+
+        .status {
+            font-size: 10px;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 3px;
+        }
+
+        .status-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+            transition: background 0.3s;
+        }
+
+        .status-dot.connected {
+            background: var(--success);
+        }
+
+        .status-dot.warning {
+            background: var(--warning);
+        }
+
+        .status-dot.error {
+            background: var(--error);
+        }
+
+        /* Encryption Status */
+        .encryption-status {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 9px;
+            color: var(--success);
+            padding: 2px 6px;
+            background: var(--bg-surface);
+            border: 1px solid var(--success);
+        }
+
+        .encryption-status::before {
+            content: '🔒';
+            font-size: 10px;
+        }
+
+        .encryption-status.disabled {
+            color: var(--error);
+            border-color: var(--error);
+        }
+
+        .encryption-status.disabled::before {
+            content: '🔓';
+        }
+
+        .encryption-status svg {
+            display: none;
+        }
+
+        /* AI Controls */
+        .ai-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 160px;
+        }
+
+        .ai-panel-title {
+            background: linear-gradient(90deg, var(--ai-color), #4a1a6b);
+            color: white;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .ai-panel-title::before {
+            content: '🤖 ';
+        }
+
+        .ai-panel-content {
+            background: var(--bg-window);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            border-top: none;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .ai-status-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+        }
+
+        .ai-status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 6px;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+        }
+
+        .ai-status-chip.online {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .ai-status-chip.online::before {
+            content: '●';
+            color: var(--success);
+        }
+
+        .ai-status-chip.offline {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .ai-status-chip.offline::before {
+            content: '○';
+            color: var(--error);
+        }
+
+        .ai-status-chip.checking {
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+
+        .ai-status-chip.checking::before {
+            content: '◐';
+            color: var(--warning);
+        }
+
+        .ai-toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 9px;
+            color: var(--text-secondary);
+        }
+
+        .ai-toggle {
+            position: relative;
+            width: 28px;
+            height: 14px;
+            background: var(--bg-surface);
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .ai-toggle.active {
+            background: var(--ai-color);
+        }
+
+        .ai-toggle::after {
+            content: '';
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            width: 8px;
+            height: 8px;
+            background: var(--text-primary);
+            transition: transform 0.2s;
+        }
+
+        .ai-toggle.active::after {
+            transform: translateX(12px);
+            background: white;
+        }
+
+        .ai-model-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .ai-model-select {
+            flex: 1;
+            font-size: 9px;
+        }
+
+        .ai-hint {
+            font-size: 8px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .ai-error-note {
+            font-size: 8px;
+            color: var(--error);
+            line-height: 1.3;
+            padding: 3px;
+            background: #ffeeee;
+            border: 1px solid var(--error);
+            display: none;
+        }
+
+        .ai-error-note.visible {
+            display: block;
+        }
+
+        .messages-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            margin-top: 8px;
+        }
+
+        .messages-window-title {
+            background: #1a1a1a;
+            color: white;
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 6px 6px 0 0;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .messages-window-title::before {
+            content: '🦔';
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: var(--bg-surface);
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 6px 8px;
+            font-size: 11px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            background: var(--bg-window);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+        }
+
+        .message.mine {
+            align-self: flex-end;
+            background: var(--highlight);
+            color: var(--highlight-text);
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+        }
+
+        .message.theirs {
+            align-self: flex-start;
+        }
+
+        .message.ai {
+            align-self: flex-start;
+            background: #f5e6ff;
+            border-color: var(--ai-color);
+        }
+
+        .message.unsent {
+            opacity: 0.6;
+            border-style: dashed;
+        }
+
+        .message.unencrypted {
+            opacity: 0.5;
+            border-style: dotted;
+        }
+
+        .message.unencrypted::before {
+            content: '🔓 ';
+        }
+
+        .message-sender {
+            font-size: 9px;
+            font-weight: 700;
+            margin-bottom: 3px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .message.mine .message-sender {
+            color: var(--highlight-text);
+        }
+
+        .message.ai .message-sender {
+            color: var(--ai-color);
+            opacity: 1;
+        }
+
+        .message.ai .message-sender::before {
+            content: '🤖 ';
+        }
+
+        /* Message wrapper for reactions */
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+            position: relative;
+        }
+
+        .message-wrapper.mine {
+            align-self: flex-end;
+        }
+
+        .message-wrapper.theirs,
+        .message-wrapper.ai {
+            align-self: flex-start;
+        }
+
+        .message-wrapper .message {
+            max-width: 100%;
+        }
+
+        /* Reply-to indicator */
+        .reply-to-indicator {
+            font-size: 9px;
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            margin-bottom: 2px;
+            background: var(--bg-elevated);
+            border-left: 2px solid var(--accent);
+            border-radius: 2px;
+            cursor: pointer;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .reply-to-indicator:hover {
+            background: var(--bg-window);
+        }
+
+        .reply-to-indicator::before {
+            content: '↩ ';
+        }
+
+        .message-wrapper.mine .reply-to-indicator {
+            border-left-color: var(--highlight-text);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--highlight-text);
+            opacity: 0.8;
+        }
+
+        /* Reactions container */
+        .reactions-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            margin-top: 3px;
+            max-width: 100%;
+        }
+
+        .reaction-bubble {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 2px 5px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.1s;
+        }
+
+        .reaction-bubble:hover {
+            transform: scale(1.1);
+            background: var(--bg-elevated);
+        }
+
+        .reaction-bubble.mine {
+            background: var(--accent);
+            border-color: var(--accent-dim);
+        }
+
+        .reaction-count {
+            font-size: 9px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .reaction-bubble.mine .reaction-count {
+            color: white;
+        }
+
+        /* Context Menu */
+        .context-menu-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.15s, visibility 0.15s;
+        }
+
+        .context-menu-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .context-menu {
+            position: fixed;
+            background: var(--bg-window);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+            min-width: 120px;
+            z-index: 10000;
+        }
+
+        .context-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            font-size: 11px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: 'IBM Plex Mono', monospace;
+            color: var(--text-primary);
+        }
+
+        .context-menu-item:hover {
+            background: var(--highlight);
+            color: var(--highlight-text);
+        }
+
+        .context-menu-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 2px 0;
+        }
+
+        /* Emoji Picker */
+        .emoji-picker {
+            position: fixed;
+            background: var(--bg-window);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+            padding: 8px;
+            z-index: 10001;
+            display: none;
+        }
+
+        .emoji-picker.visible {
+            display: block;
+        }
+
+        .emoji-picker-title {
+            font-size: 9px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .emoji-picker-grid {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .emoji-picker-btn {
+            width: 32px;
+            height: 32px;
+            font-size: 18px;
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            background: var(--bg-surface);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s;
+        }
+
+        .emoji-picker-btn:hover {
+            transform: scale(1.15);
+            background: var(--highlight);
+        }
+
+        .emoji-picker-btn:active {
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+        }
+
+        /* Reply bar */
+        .reply-bar {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            background: var(--bg-elevated);
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            border-bottom: none;
+            font-size: 10px;
+        }
+
+        .reply-bar.visible {
+            display: flex;
+        }
+
+        .reply-bar-icon {
+            font-size: 12px;
+        }
+
+        .reply-bar-content {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .reply-bar-sender {
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 1px;
+        }
+
+        .reply-bar-text {
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .reply-bar-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-secondary);
+            padding: 2px 6px;
+        }
+
+        .reply-bar-close:hover {
+            color: var(--error);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 6px;
+            padding: 8px;
+            background: var(--bg-window);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            border-top: none;
+            flex-shrink: 0;
+        }
+
+        .message-input {
+            flex: 1;
+            font-size: 11px;
+        }
+
+        .message-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .message-input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .send-btn {
+            font-size: 11px;
+            padding: 4px 12px;
+        }
+
+        .send-btn::before {
+            content: '📨 ';
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .footer {
+            padding: 6px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 9px;
+        }
+
+        .footer a:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+
+        .empty-state {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 11px;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .empty-state::before {
+            content: '📭 ';
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-window);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            font-size: 11px;
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .toast.visible {
+            opacity: 1;
+        }
+
+        .toast.error {
+            background: #ffeeee;
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        @media (max-width: 480px) {
+            .chat-app {
+                padding: 4px;
+            }
+            
+            .top-bar {
+                padding: 6px;
+            }
+
+            .share-dialog-content {
+                padding: 8px;
+            }
+            
+            .status {
+                font-size: 9px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+
+            .message-wrapper {
+                max-width: 90%;
+            }
+
+            .context-menu {
+                min-width: 100px;
+            }
+
+            .emoji-picker-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 20px;
+            }
+
+            .setup-title {
+                font-size: 14px;
+            }
+
+            .setup-code {
+                font-size: 8px;
+            }
+
+            .ai-panel {
+                min-width: 140px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Setup Screen -->
+    <div class="setup-screen" id="setupScreen">
+        <div class="setup-content">
+            <div class="setup-header">
+                <h1 class="setup-title">pochapochi</h1>
+                <p class="setup-description">
+                    This is a chat app using <strong>GunDB</strong>, a peer-to-peer decentralized database.
+                    Create a room, share the invite link, and chat directly with people who have the encrypted URL.
+                    <br><br>
+                    <strong style="color: var(--success);">🔒 End-to-end encrypted</strong> – Only people with the invite link can read messages.
+                </p>
+            </div>
+
+            <div class="setup-blocks">
+                <div class="setup-block retro-window">
+                    <div class="setup-block-title">Start a room</div>
+                    <div class="setup-block-content">
+                        <div class="setup-code-wrapper">
+                            <pre class="setup-code" id="codeBlockLeft">1. Open the app
+2. Pick a display name
+3. A new room link is generated automatically
+4. Use Share Link to invite someone
+5. Messages stay encrypted end-to-end</pre>
+                        </div>
+                        <button class="retro-btn setup-copy-btn" id="copyBtnLeft">Copy</button>
+                        <div id="fallbackLeft"></div>
+                    </div>
+                </div>
+
+                <div class="setup-block retro-window">
+                    <div class="setup-block-title">Join a room</div>
+                    <div class="setup-block-content">
+                        <div class="setup-code-wrapper">
+                            <pre class="setup-code" id="codeBlockRight">1. Open the full invite link you received
+2. Keep the #k= fragment intact
+3. Pick a display name for this room
+4. Wait for relay connection
+5. Start chatting</pre>
+                        </div>
+                        <button class="retro-btn setup-copy-btn" id="copyBtnRight">Copy</button>
+                        <div id="fallbackRight"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="setup-cta">
+                <button class="retro-btn retro-btn-primary setup-cta-btn" id="setupContinueBtn">I'm ready! Let's go</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat App -->
+    <div class="chat-app hidden" id="chatApp">
+        <div class="error-banner" id="errorBanner">
+            Unable to connect to relay network. Please refresh to try again.
+        </div>
+        
+        <div class="chat-main-window retro-window">
+            <div class="retro-window-title">
+                <span class="retro-window-title-text">
+                    <span>🦔</span>
+                    <span>P2P Chat Room</span>
+                </span>
+            </div>
+            
+            <div class="top-bar">
+                <div class="invite-section">
+                    <div class="invite-row">
+                        <button class="retro-btn share-btn" id="shareBtn">Share Link</button>
+                        <button class="retro-btn setup-link-btn" id="showSetupBtn">How It Works</button>
+                    </div>
+                    <div class="invite-input-wrapper">
+                        <input type="text" class="retro-input invite-input" id="inviteInput" readonly>
+                        <span class="invite-hint" id="inviteHint">Press Ctrl+C (or Cmd+C) to copy</span>
+                    </div>
+                    <div class="display-name-row">
+                        <label class="display-name-label">Display name <span class="display-name-hint">(optional)</span></label>
+                        <div class="display-name-input-row">
+                            <input type="text" class="retro-input display-name-input" id="displayNameInput" placeholder="leave blank to show username" maxlength="32">
+                            <button class="retro-btn display-name-save-btn" id="displayNameSaveBtn">Save</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="right-panel">
+                    <div class="status">
+                        <div class="status-row">
+                            <span class="status-dot" id="statusDot"></span>
+                            <span id="statusText">Initializing…</span>
+                        </div>
+                        <span id="relayCount"></span>
+                        <div class="encryption-status" id="encryptionStatus">
+                            <span id="encryptionText">E2E Encrypted</span>
+                        </div>
+                    </div>
+                    
+                    <div class="ai-panel" hidden aria-hidden="true">
+                        <div class="ai-panel-title">AI Assistant <button class="ai-customize-btn" id="aiCustomizeBtn">Customize</button></div>
+                        <div class="ai-panel-content">
+                            <div class="ai-status-row">
+                                <span class="ai-status-chip checking" id="aiStatusChip">Checking</span>
+                            </div>
+                            <div class="ai-toggle-row">
+                                <div class="ai-toggle" id="aiToggle"></div>
+                                <span>AI replies on this device</span>
+                            </div>
+                            <div class="ai-model-row">
+                                <select class="retro-select ai-model-select" id="aiModelSelect">
+                                    <option value="llama3.2:1b">llama3.2:1b</option>
+                                    <option value="llama3.2:3b">llama3.2:3b</option>
+                                    <option value="llama3.1:8b">llama3.1:8b</option>
+                                    <option value="mistral:7b">mistral:7b</option>
+                                    <option value="phi3:mini">phi3:mini</option>
+                                    <option value="gemma2:2b">gemma2:2b</option>
+                                </select>
+                            </div>
+                            <div class="ai-hint" id="aiHint">Run Ollama in Termux, then reload.</div>
+                            <div class="ai-error-note" id="aiErrorNote"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="messages-window">
+                <div class="messages-window-title">Messages</div>
+                <div class="messages-container" id="messages">
+                    <div class="empty-state" id="emptyState">
+                        Share the invite link to start chatting
+                    </div>
+                </div>
+                
+                <div class="reply-bar" id="replyBar">
+                    <span class="reply-bar-icon">↩</span>
+                    <div class="reply-bar-content">
+                        <div class="reply-bar-sender" id="replyBarSender"></div>
+                        <div class="reply-bar-text" id="replyBarText"></div>
+                    </div>
+                    <button class="reply-bar-close" id="replyBarClose">✕</button>
+                </div>
+                <div class="input-row">
+                    <input type="text" class="retro-input message-input" id="messageInput" placeholder="Type a message..." maxlength="500" disabled>
+                    <button class="retro-btn send-btn" id="sendBtn" disabled>Send</button>
+                </div>
+            </div>
+        </div>
+        
+
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <!-- Context Menu -->
+    <div class="context-menu-overlay" id="contextMenuOverlay">
+        <div class="context-menu" id="contextMenu">
+            <button class="context-menu-item" id="contextMenuReact">
+                <span>😊</span>
+                <span>React</span>
+            </button>
+            <div class="context-menu-divider"></div>
+            <button class="context-menu-item" id="contextMenuReply">
+                <span>↩</span>
+                <span>Reply</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Emoji Picker -->
+    <div class="emoji-picker" id="emojiPicker">
+        <div class="emoji-picker-title">Pick a reaction</div>
+        <div class="emoji-picker-grid">
+            <button class="emoji-picker-btn" data-emoji="🦔">🦔</button>
+            <button class="emoji-picker-btn" data-emoji="♥️">♥️</button>
+            <button class="emoji-picker-btn" data-emoji="🐖">🐖</button>
+            <button class="emoji-picker-btn" data-emoji="✅">✅</button>
+            <button class="emoji-picker-btn" data-emoji="😢">😢</button>
+            <button class="emoji-picker-btn" data-emoji="🙂">🙂</button>
+        </div>
+    </div>
+
+    <!-- Username Dialog -->
+    <div class="username-dialog-overlay" id="usernameDialogOverlay">
+        <div class="username-dialog">
+            <div class="username-dialog-header">Enter Username</div>
+            <div class="username-dialog-body">
+                <div>
+                    <div class="username-dialog-label">Choose a name for this chat:</div>
+                    <input type="text" class="username-dialog-input" id="usernameDialogInput" placeholder="username" maxlength="24" autocomplete="off" spellcheck="false">
+                </div>
+                <div class="username-dialog-footer">
+                    <button class="username-dialog-btn" id="usernameDialogOk">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Prompt Dialog -->
+    <div class="ai-prompt-dialog-overlay hidden" id="aiPromptDialogOverlay" hidden aria-hidden="true">
+        <div class="ai-prompt-dialog">
+            <div class="ai-prompt-dialog-header">
+                <span class="ai-prompt-dialog-title">Customize AI Prompt</span>
+                <button class="ai-prompt-dialog-close" id="aiPromptDialogClose">✕</button>
+            </div>
+            <div class="ai-prompt-dialog-body">
+                <div class="ai-prompt-dialog-label">System prompt for the local AI:</div>
+                <textarea class="ai-prompt-dialog-textarea" id="aiPromptTextarea" placeholder="Enter system prompt..." spellcheck="false"></textarea>
+                <div class="ai-prompt-dialog-footer">
+                    <button class="ai-prompt-dialog-btn" id="aiPromptResetBtn">Reset</button>
+                    <button class="ai-prompt-dialog-btn primary" id="aiPromptSaveBtn">✅ Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Dialog -->
+    <div class="share-dialog-overlay" id="shareDialogOverlay">
+        <div class="share-dialog retro-window">
+            <div class="share-dialog-header">
+                <span class="share-dialog-title">Share Chat Room</span>
+                <button class="share-dialog-close" id="shareDialogClose">✕</button>
+            </div>
+            <div class="share-dialog-content">
+                <div class="share-qr-container" id="shareQrContainer"></div>
+                <div class="share-qr-hint">Scan with your phone's camera to join</div>
+                <div class="share-link-row">
+                    <input type="text" class="retro-input share-link-input" id="shareLinkInput" readonly>
+                    <button class="retro-btn share-copy-btn" id="shareCopyBtn">Copy</button>
+                </div>
+                <div class="share-security-note">
+                    Link includes encryption key. Anyone with this link can read messages in this chat.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/shogun-relays@1.0.5/browser.js"></script>
+    <script>
+        // ===== RETRO SOUND EFFECTS =====
+        var audioCtx = null;
+        var soundEnabled = true;
+        
+        function initAudio() {
+            if (!audioCtx) {
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.log('Web Audio not supported');
+                }
+            }
+            return audioCtx;
+        }
+        
+        function playButtonClick() {
+            var ctx = initAudio();
+            if (!ctx || !soundEnabled) return;
+            
+            // Short, snappy click - like old keyboard
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(800, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.05);
+            
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+            
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.05);
+        }
+        
+        function playRemoteMessage() {
+            var ctx = initAudio();
+            if (!ctx || !soundEnabled) return;
+            
+            // Two-tone notification - like old ICQ "uh-oh"
+            var osc1 = ctx.createOscillator();
+            var osc2 = ctx.createOscillator();
+            var gain1 = ctx.createGain();
+            var gain2 = ctx.createGain();
+            
+            osc1.connect(gain1);
+            gain1.connect(ctx.destination);
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            
+            osc1.type = 'sine';
+            osc2.type = 'sine';
+            
+            // First tone
+            osc1.frequency.setValueAtTime(523, ctx.currentTime); // C5
+            gain1.gain.setValueAtTime(0.2, ctx.currentTime);
+            gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+            
+            // Second tone (higher, delayed)
+            osc2.frequency.setValueAtTime(784, ctx.currentTime + 0.08); // G5
+            gain2.gain.setValueAtTime(0, ctx.currentTime);
+            gain2.gain.setValueAtTime(0.2, ctx.currentTime + 0.08);
+            gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.22);
+            
+            osc1.start(ctx.currentTime);
+            osc1.stop(ctx.currentTime + 0.12);
+            osc2.start(ctx.currentTime + 0.08);
+            osc2.stop(ctx.currentTime + 0.22);
+        }
+        
+        function playLocalSent() {
+            var ctx = initAudio();
+            if (!ctx || !soundEnabled) return;
+            
+            // Swoosh/whoosh - ascending tone
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            var filter = ctx.createBiquadFilter();
+            
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.type = 'sawtooth';
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(2000, ctx.currentTime);
+            
+            osc.frequency.setValueAtTime(300, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+            
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+            
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.1);
+        }
+        
+        function playAIMessage() {
+            var ctx = initAudio();
+            if (!ctx || !soundEnabled) return;
+            
+            // Robotic/computery sound - arpeggiated beeps
+            var notes = [440, 554, 659, 880]; // A4, C#5, E5, A5 (A major arpeggio)
+            var noteLength = 0.06;
+            var gap = 0.04;
+            
+            notes.forEach(function(freq, i) {
+                var osc = ctx.createOscillator();
+                var gain = ctx.createGain();
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                osc.type = 'square';
+                var startTime = ctx.currentTime + i * (noteLength + gap);
+                
+                osc.frequency.setValueAtTime(freq, startTime);
+                
+                gain.gain.setValueAtTime(0, startTime);
+                gain.gain.linearRampToValueAtTime(0.12, startTime + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.01, startTime + noteLength);
+                
+                osc.start(startTime);
+                osc.stop(startTime + noteLength);
+            });
+        }
+        
+        // Add click sound to all buttons
+        document.addEventListener('click', function(e) {
+            if (e.target.matches('.retro-btn, .retro-btn *')) {
+                playButtonClick();
+            }
+        });
+        
+        // ===== SETUP SCREEN LOGIC =====
+        var SETUP_DONE_KEY = 'SETUP_DONE';
+
+        var leftBlockCode = document.getElementById('codeBlockLeft').textContent;
+        var rightBlockCode = document.getElementById('codeBlockRight').textContent;
+
+        function showSetupScreen() {
+            document.getElementById('setupScreen').classList.remove('hidden');
+            document.getElementById('chatApp').classList.add('hidden');
+        }
+
+        function showChatApp() {
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('chatApp').classList.remove('hidden');
+        }
+
+        function copySetupBlock(text, btnId, fallbackId) {
+            var btn = document.getElementById(btnId);
+            var fallbackContainer = document.getElementById(fallbackId);
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function() {
+                    btn.textContent = 'Copied!';
+                    btn.classList.add('copied');
+                    setTimeout(function() {
+                        btn.textContent = 'Copy';
+                        btn.classList.remove('copied');
+                    }, 1000);
+                    fallbackContainer.innerHTML = '';
+                }).catch(function() {
+                    showSetupFallback(text, fallbackContainer);
+                });
+            } else {
+                showSetupFallback(text, fallbackContainer);
+            }
+        }
+
+        function showSetupFallback(text, container) {
+            container.innerHTML = '<textarea class="setup-fallback-textarea" readonly>' + escapeHtml(text) + '</textarea>' +
+                '<div class="setup-fallback-hint">Press Ctrl+C (or Cmd+C) to copy</div>';
+            var textarea = container.querySelector('textarea');
+            textarea.focus();
+            textarea.select();
+        }
+
+        document.getElementById('copyBtnLeft').addEventListener('click', function() {
+            copySetupBlock(leftBlockCode, 'copyBtnLeft', 'fallbackLeft');
+        });
+
+        document.getElementById('copyBtnRight').addEventListener('click', function() {
+            copySetupBlock(rightBlockCode, 'copyBtnRight', 'fallbackRight');
+        });
+
+        document.getElementById('setupContinueBtn').addEventListener('click', function() {
+            localStorage.setItem(SETUP_DONE_KEY, '1');
+            showChatApp();
+        });
+
+        document.getElementById('showSetupBtn').addEventListener('click', function() {
+            showSetupScreen();
+        });
+
+        // Always go directly to chat app - skip setup screen
+        showChatApp();
+
+        // ===== USERNAME DIALOG =====
+        var usernameSet = false;
+        var pendingBoot = false;
+
+        function showUsernameDialog() {
+            var overlay = document.getElementById('usernameDialogOverlay');
+            var input = document.getElementById('usernameDialogInput');
+            overlay.classList.remove('hidden');
+            setTimeout(function() {
+                input.focus();
+            }, 100);
+        }
+
+        function hideUsernameDialog() {
+            var overlay = document.getElementById('usernameDialogOverlay');
+            overlay.classList.add('hidden');
+        }
+
+        function confirmUsername() {
+            var input = document.getElementById('usernameDialogInput');
+            var username = input.value.trim();
+            if (!username) {
+                input.focus();
+                return;
+            }
+            // Store as display name for this room once we have roomId
+            sessionStorage.setItem('PENDING_USERNAME', username);
+            usernameSet = true;
+            hideUsernameDialog();
+            // Now boot the app and connect to GunDB
+            if (pendingBoot) {
+                actualBoot();
+            }
+        }
+
+        document.getElementById('usernameDialogOk').addEventListener('click', confirmUsername);
+        document.getElementById('usernameDialogInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                confirmUsername();
+            }
+        });
+
+        // ===== CHAT STATE =====
+        var roomId = null;
+        var inviteUrl = null;
+        var myId = null;
+        var myClientId = null;
+        var gun = null;
+        var AI_FEATURE_ENABLED = false;
+
+        var roomRef = null;
+        var seenMessages = {};
+        var messagesArray = [];
+        var reactionsMap = {}; // msgId -> { emoji: { count, users: [userId, ...], myReaction: bool } }
+        var replyingTo = null; // { id, senderName, text }
+        var contextMenuMsgId = null;
+        var relaysCount = 0;
+        var peerHiCount = 0;
+        var lastAckOk = null;
+        var networkCheckTimeout = null;
+        var isNetworkOk = false;
+
+        // ===== ENCRYPTION STATE =====
+        var roomKeyBytes = null;       // 32-byte Uint8Array from URL fragment
+        var derivedAesKey = null;      // CryptoKey for AES-GCM
+        var encryptionReady = false;   // true when key is derived and ready
+
+        // ===== AI STATE =====
+        var OLLAMA_BASE_URL = 'http://127.0.0.1:11434';
+        var aiOnline = false;
+        var aiEnabled = false;
+        var aiGenerating = false;
+        var aiPendingMessage = null;
+        var aiDebounceTimer = null;
+        var processedAiMessages = new Set();
+        var contextBuffer = [];
+        var MAX_CONTEXT_MESSAGES = 12;
+        var IS_HOST_KEY = 'IS_HOST_' ;
+        var AI_ENABLED_KEY = 'AI_ENABLED_';
+        var AI_PROMPT_KEY = 'AI_PROMPT_';
+        var DISPLAY_NAME_KEY = 'DISPLAY_NAME_';
+        
+        var DEFAULT_AI_PROMPT = 'You are a hedgehog NPC in a storybook. You love your flower garden and you like to make friends. You have access to a magic book that tells you every answer to every question. Users will ask you questions and you can either answer on your own or answer from your magic book. Answer succinctly and in character, never more than 2 sentences.';
+        var currentAiPrompt = DEFAULT_AI_PROMPT;
+
+        // ===== UTILITY FUNCTIONS =====
+        
+        function generateSecureId(length) {
+            var arr = new Uint8Array(length);
+            crypto.getRandomValues(arr);
+            var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            var result = '';
+            for (var i = 0; i < length; i++) {
+                result += chars[arr[i] % chars.length];
+            }
+            return result;
+        }
+
+        function getRoomIdFromUrl() {
+            var params = new URLSearchParams(window.location.search);
+            return params.get('room');
+        }
+
+        function setRoomIdInUrl(id) {
+            var url = window.location.pathname + '?room=' + id;
+            history.replaceState(null, '', url);
+        }
+
+        // ===== BASE64URL ENCODING =====
+        function base64urlEncode(bytes) {
+            var binary = '';
+            for (var i = 0; i < bytes.length; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return btoa(binary)
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=/g, '');
+        }
+
+        function base64urlDecode(str) {
+            // Add padding
+            var padded = str + '==='.slice(0, (4 - str.length % 4) % 4);
+            // Convert base64url to base64
+            var base64 = padded.replace(/-/g, '+').replace(/_/g, '/');
+            var binary = atob(base64);
+            var bytes = new Uint8Array(binary.length);
+            for (var i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            return bytes;
+        }
+
+        // ===== ENCRYPTION KEY MANAGEMENT =====
+        function generateRoomKey() {
+            var key = new Uint8Array(32);
+            crypto.getRandomValues(key);
+            return key;
+        }
+
+        function getKeyFromHash() {
+            var hash = window.location.hash;
+            if (!hash || hash.length < 3) return null;
+            
+            // Parse #k=<base64url>
+            var match = hash.match(/k=([A-Za-z0-9_-]+)/);
+            if (!match) return null;
+            
+            try {
+                var decoded = base64urlDecode(match[1]);
+                if (decoded.length !== 32) return null;
+                return decoded;
+            } catch (e) {
+                console.error('Failed to decode key from hash:', e);
+                return null;
+            }
+        }
+
+        function setKeyInHash(keyBytes) {
+            var encoded = base64urlEncode(keyBytes);
+            var currentUrl = window.location.pathname + window.location.search;
+            history.replaceState(null, '', currentUrl + '#k=' + encoded);
+        }
+
+        async function deriveAesKey(roomKeyBytes, roomId) {
+            // Import the room key as HKDF key material
+            var keyMaterial = await crypto.subtle.importKey(
+                'raw',
+                roomKeyBytes,
+                { name: 'HKDF' },
+                false,
+                ['deriveKey']
+            );
+            
+            // Use roomId as salt (deterministic for same room)
+            var encoder = new TextEncoder();
+            var salt = encoder.encode('p2pchat-salt-' + roomId);
+            var info = encoder.encode('p2pchat-aes-key');
+            
+            // Derive AES-256-GCM key using HKDF-SHA256
+            var aesKey = await crypto.subtle.deriveKey(
+                {
+                    name: 'HKDF',
+                    hash: 'SHA-256',
+                    salt: salt,
+                    info: info
+                },
+                keyMaterial,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['encrypt', 'decrypt']
+            );
+            
+            return aesKey;
+        }
+
+        // ===== ENCRYPTION/DECRYPTION =====
+        async function encryptMessage(plaintext, msgId, ts, sender) {
+            if (!encryptionReady || !derivedAesKey) {
+                throw new Error('Encryption not ready');
+            }
+            
+            // Generate fresh 12-byte nonce
+            var nonce = new Uint8Array(12);
+            crypto.getRandomValues(nonce);
+            
+            // Build additional authenticated data (AAD)
+            var encoder = new TextEncoder();
+            var aad = encoder.encode(JSON.stringify({
+                roomId: roomId,
+                msgId: msgId,
+                ts: ts,
+                sender: sender
+            }));
+            
+            // Encrypt
+            var plaintextBytes = encoder.encode(plaintext);
+            var ciphertextBuffer = await crypto.subtle.encrypt(
+                {
+                    name: 'AES-GCM',
+                    iv: nonce,
+                    additionalData: aad
+                },
+                derivedAesKey,
+                plaintextBytes
+            );
+            
+            return {
+                n: base64urlEncode(nonce),
+                ct: base64urlEncode(new Uint8Array(ciphertextBuffer))
+            };
+        }
+
+        async function decryptMessage(nonceB64, ciphertextB64, msgId, ts, sender) {
+            if (!encryptionReady || !derivedAesKey) {
+                throw new Error('Decryption not ready');
+            }
+            
+            var nonce = base64urlDecode(nonceB64);
+            var ciphertext = base64urlDecode(ciphertextB64);
+            
+            // Rebuild AAD
+            var encoder = new TextEncoder();
+            var aad = encoder.encode(JSON.stringify({
+                roomId: roomId,
+                msgId: msgId,
+                ts: ts,
+                sender: sender
+            }));
+            
+            // Decrypt
+            var plaintextBuffer = await crypto.subtle.decrypt(
+                {
+                    name: 'AES-GCM',
+                    iv: nonce,
+                    additionalData: aad
+                },
+                derivedAesKey,
+                ciphertext
+            );
+            
+            var decoder = new TextDecoder();
+            return decoder.decode(plaintextBuffer);
+        }
+
+        function updateEncryptionStatus(ready) {
+            var status = document.getElementById('encryptionStatus');
+            var text = document.getElementById('encryptionText');
+            
+            if (ready) {
+                status.classList.remove('disabled');
+                text.textContent = 'E2E Encrypted';
+            } else {
+                status.classList.add('disabled');
+                text.textContent = 'Missing key';
+            }
+        }
+
+        function showToast(message, isError) {
+            var toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.toggle('error', !!isError);
+            toast.classList.add('visible');
+            setTimeout(function() {
+                toast.classList.remove('visible');
+            }, 3000);
+        }
+
+        function copyToClipboard(text) {
+            var inviteInput = document.getElementById('inviteInput');
+            var inviteHint = document.getElementById('inviteHint');
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function() {
+                    showCopyFeedback(true);
+                    inviteHint.classList.remove('visible');
+                }).catch(function() {
+                    showFallbackCopy();
+                });
+            } else {
+                showFallbackCopy();
+            }
+        }
+
+        function showFallbackCopy() {
+            var inviteInput = document.getElementById('inviteInput');
+            var inviteHint = document.getElementById('inviteHint');
+            
+            inviteInput.focus();
+            inviteInput.select();
+            inviteHint.classList.add('visible');
+            
+            try {
+                var success = document.execCommand('copy');
+                if (success) {
+                    showCopyFeedback(true);
+                    inviteHint.classList.remove('visible');
+                }
+            } catch (e) {
+                // Keep the hint visible for manual copy
+            }
+        }
+
+        function showCopyFeedback(success) {
+            // Legacy function - kept for compatibility
+        }
+
+        // ===== SHARE DIALOG =====
+        var shareDialogQrGenerated = false;
+
+        function generateQRCode(container, url, callback) {
+            container.innerHTML = '';
+            
+            // Try multiple approaches for QR code generation
+            // The qrcode library may expose different APIs depending on how it's loaded
+            
+            if (typeof QRCode !== 'undefined') {
+                // Method 1: toCanvas (node-qrcode browser build)
+                if (typeof QRCode.toCanvas === 'function') {
+                    var canvas = document.createElement('canvas');
+                    QRCode.toCanvas(canvas, url, {
+                        width: 180,
+                        margin: 1,
+                        color: {
+                            dark: '#1a1a1a',
+                            light: '#ffffff'
+                        },
+                        errorCorrectionLevel: 'M'
+                    }, function(error) {
+                        if (error) {
+                            console.error('QRCode.toCanvas error:', error);
+                            fallbackQRCode(container, url, callback);
+                        } else {
+                            container.appendChild(canvas);
+                            if (callback) callback(true);
+                        }
+                    });
+                    return;
+                }
+                
+                // Method 2: toDataURL (alternative API)
+                if (typeof QRCode.toDataURL === 'function') {
+                    QRCode.toDataURL(url, {
+                        width: 180,
+                        margin: 1,
+                        color: {
+                            dark: '#1a1a1a',
+                            light: '#ffffff'
+                        },
+                        errorCorrectionLevel: 'M'
+                    }, function(error, dataUrl) {
+                        if (error) {
+                            console.error('QRCode.toDataURL error:', error);
+                            fallbackQRCode(container, url, callback);
+                        } else {
+                            var img = document.createElement('img');
+                            img.src = dataUrl;
+                            img.width = 180;
+                            img.height = 180;
+                            container.appendChild(img);
+                            if (callback) callback(true);
+                        }
+                    });
+                    return;
+                }
+                
+                // Method 3: Constructor-based (qrcodejs style)
+                if (typeof QRCode === 'function') {
+                    try {
+                        var qrDiv = document.createElement('div');
+                        container.appendChild(qrDiv);
+                        new QRCode(qrDiv, {
+                            text: url,
+                            width: 180,
+                            height: 180,
+                            colorDark: '#1a1a1a',
+                            colorLight: '#ffffff',
+                            correctLevel: QRCode.CorrectLevel ? QRCode.CorrectLevel.M : 1
+                        });
+                        if (callback) callback(true);
+                        return;
+                    } catch (e) {
+                        console.error('QRCode constructor error:', e);
+                    }
+                }
+            }
+            
+            // Fallback: use external QR API
+            fallbackQRCode(container, url, callback);
+        }
+        
+        function fallbackQRCode(container, url, callback) {
+            // Use a reliable external QR code API as fallback
+            container.innerHTML = '';
+            var img = document.createElement('img');
+            img.width = 180;
+            img.height = 180;
+            img.alt = 'QR Code for chat room link';
+            
+            // Use QR Server API - reliable and free
+            var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(url);
+            img.src = qrApiUrl;
+            
+            img.onload = function() {
+                if (callback) callback(true);
+            };
+            
+            img.onerror = function() {
+                console.error('QR API fallback also failed');
+                container.innerHTML = '<span style="color: var(--error); font-size: 10px;">Failed to generate QR code</span>';
+                if (callback) callback(false);
+            };
+            
+            container.appendChild(img);
+        }
+
+        function openShareDialog() {
+            var overlay = document.getElementById('shareDialogOverlay');
+            var linkInput = document.getElementById('shareLinkInput');
+            
+            linkInput.value = inviteUrl;
+            overlay.classList.add('visible');
+            
+            // Generate QR code only once
+            if (!shareDialogQrGenerated && inviteUrl) {
+                var container = document.getElementById('shareQrContainer');
+                generateQRCode(container, inviteUrl, function(success) {
+                    if (success) {
+                        shareDialogQrGenerated = true;
+                    }
+                });
+            }
+        }
+
+        function closeShareDialog() {
+            var overlay = document.getElementById('shareDialogOverlay');
+            overlay.classList.remove('visible');
+        }
+
+        function copyShareLink() {
+            var btn = document.getElementById('shareCopyBtn');
+            var linkInput = document.getElementById('shareLinkInput');
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(inviteUrl).then(function() {
+                    btn.textContent = '✓ Copied!';
+                    btn.classList.add('copied');
+                    setTimeout(function() {
+                        btn.textContent = 'Copy';
+                        btn.classList.remove('copied');
+                    }, 2000);
+                }).catch(function() {
+                    fallbackCopyShareLink();
+                });
+            } else {
+                fallbackCopyShareLink();
+            }
+        }
+
+        function fallbackCopyShareLink() {
+            var linkInput = document.getElementById('shareLinkInput');
+            var btn = document.getElementById('shareCopyBtn');
+            
+            linkInput.focus();
+            linkInput.select();
+            
+            try {
+                var success = document.execCommand('copy');
+                if (success) {
+                    btn.textContent = '✓ Copied!';
+                    btn.classList.add('copied');
+                    setTimeout(function() {
+                        btn.textContent = 'Copy';
+                        btn.classList.remove('copied');
+                    }, 2000);
+                }
+            } catch (e) {
+                // Keep input selected for manual copy
+            }
+        }
+
+        // Set up share dialog event handlers
+        document.getElementById('shareBtn').onclick = openShareDialog;
+        document.getElementById('shareDialogClose').onclick = closeShareDialog;
+        document.getElementById('shareCopyBtn').onclick = copyShareLink;
+
+        // Close on overlay click
+        document.getElementById('shareDialogOverlay').onclick = function(e) {
+            if (e.target === this) {
+                closeShareDialog();
+            }
+        };
+
+        // Close on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeShareDialog();
+            }
+        });
+        
+        // Handle incoming reactions
+        function handleIncomingReaction(decrypted, senderId) {
+            var targetMsgId = decrypted.targetMsgId;
+            var emoji = decrypted.emoji;
+            var isAdding = decrypted.isAdding;
+            
+            if (!targetMsgId || !emoji) return;
+            
+            if (!reactionsMap[targetMsgId]) {
+                reactionsMap[targetMsgId] = {};
+            }
+            
+            var msgReactions = reactionsMap[targetMsgId];
+            
+            if (isAdding) {
+                if (!msgReactions[emoji]) {
+                    msgReactions[emoji] = { count: 0, users: [], myReaction: false };
+                }
+                // Check if this user already reacted with this emoji
+                if (msgReactions[emoji].users.indexOf(senderId) === -1) {
+                    msgReactions[emoji].count++;
+                    msgReactions[emoji].users.push(senderId);
+                    if (senderId === myId) {
+                        msgReactions[emoji].myReaction = true;
+                    }
+                }
+            } else {
+                if (msgReactions[emoji]) {
+                    var userIndex = msgReactions[emoji].users.indexOf(senderId);
+                    if (userIndex > -1) {
+                        msgReactions[emoji].count--;
+                        msgReactions[emoji].users.splice(userIndex, 1);
+                        if (senderId === myId) {
+                            msgReactions[emoji].myReaction = false;
+                        }
+                    }
+                    if (msgReactions[emoji].count <= 0) {
+                        delete msgReactions[emoji];
+                    }
+                }
+            }
+            
+            renderMessages();
+        }
+
+        // ===== UI RENDERING =====
+
+        function updateStatus(status, message) {
+            var dot = document.getElementById('statusDot');
+            var text = document.getElementById('statusText');
+            var relayCountEl = document.getElementById('relayCount');
+            
+            dot.classList.remove('connected', 'warning', 'error');
+            
+            switch(status) {
+                case 'connected':
+                    dot.classList.add('connected');
+                    isNetworkOk = true;
+                    break;
+                case 'warning':
+                    dot.classList.add('warning');
+                    break;
+                case 'error':
+                    dot.classList.add('error');
+                    isNetworkOk = false;
+                    break;
+                default:
+                    break;
+            }
+            
+            text.textContent = message;
+            
+            if (relaysCount > 0) {
+                relayCountEl.textContent = 'Relays: ' + relaysCount;
+            }
+        }
+
+        function applyAiDisabledState() {
+            var aiPanel = document.querySelector('.ai-panel');
+            var aiDialog = document.getElementById('aiPromptDialogOverlay');
+
+            if (aiPanel) {
+                aiPanel.hidden = !AI_FEATURE_ENABLED;
+            }
+
+            if (aiDialog) {
+                aiDialog.hidden = !AI_FEATURE_ENABLED;
+            }
+
+            aiEnabled = false;
+            aiOnline = false;
+        }
+
+        function updateAiStatus(online, message) {
+            if (!AI_FEATURE_ENABLED) {
+                aiOnline = false;
+                aiEnabled = false;
+                return;
+            }
+
+            var chip = document.getElementById('aiStatusChip');
+            var hint = document.getElementById('aiHint');
+            
+            chip.classList.remove('online', 'offline', 'checking');
+            
+            if (online === null) {
+                chip.classList.add('checking');
+                chip.textContent = 'Checking';
+            } else if (online) {
+                chip.classList.add('online');
+                chip.textContent = 'Online';
+                hint.textContent = 'Ollama connected!';
+            } else {
+                chip.classList.add('offline');
+                chip.textContent = 'Offline';
+                hint.textContent = 'Run Ollama in Termux, then reload. CORS errors? Set OLLAMA_ORIGINS.';
+                // Turn off AI toggle when offline
+                aiEnabled = false;
+                updateAiToggle();
+            }
+            
+            aiOnline = online === true;
+        }
+
+        function showAiError(msg) {
+            if (!AI_FEATURE_ENABLED) return;
+            var note = document.getElementById('aiErrorNote');
+            if (msg) {
+                note.textContent = msg;
+                note.classList.add('visible');
+                setTimeout(function() {
+                    note.classList.remove('visible');
+                }, 5000);
+            } else {
+                note.classList.remove('visible');
+            }
+        }
+
+        function updateAiToggle() {
+            if (!AI_FEATURE_ENABLED) return;
+            var toggle = document.getElementById('aiToggle');
+            if (aiEnabled) {
+                toggle.classList.add('active');
+            } else {
+                toggle.classList.remove('active');
+            }
+        }
+
+        function setInputsEnabled(enabled) {
+            // Only enable if encryption is ready
+            var canEnable = enabled && encryptionReady;
+            document.getElementById('messageInput').disabled = !canEnable;
+            document.getElementById('sendBtn').disabled = !canEnable;
+        }
+
+        function showError(message) {
+            var banner = document.getElementById('errorBanner');
+            banner.textContent = message;
+            banner.classList.add('visible');
+            setInputsEnabled(false);
+        }
+
+        function renderMessages() {
+            var container = document.getElementById('messages');
+            var emptyState = document.getElementById('emptyState');
+            
+            var sorted = messagesArray.slice().sort(function(a, b) {
+                return a.ts - b.ts;
+            });
+            
+            // Build a map of messages by id for reply lookup
+            var msgById = {};
+            for (var i = 0; i < sorted.length; i++) {
+                msgById[sorted[i].id] = sorted[i];
+            }
+            
+            if (sorted.length === 0) {
+                emptyState.style.display = 'flex';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            var html = '';
+            for (var i = 0; i < sorted.length; i++) {
+                var msg = sorted[i];
+                var isMine = msg.sender === myId;
+                var isAi = msg.isAI === true;
+                var wrapperCls = isAi ? 'ai' : (isMine ? 'mine' : 'theirs');
+                var msgCls = isAi ? 'ai' : (isMine ? 'mine' : 'theirs');
+                if (msg.unsent) {
+                    msgCls += ' unsent';
+                }
+                if (msg.unencrypted) {
+                    msgCls += ' unencrypted';
+                }
+                
+                html += '<div class="message-wrapper ' + wrapperCls + '" data-msg-id="' + escapeHtml(msg.id) + '">';
+                
+                // Reply-to indicator
+                if (msg.replyTo && msgById[msg.replyTo]) {
+                    var replyMsg = msgById[msg.replyTo];
+                    var replyText = (replyMsg.text || '').substring(0, 50);
+                    if (replyMsg.text && replyMsg.text.length > 50) replyText += '...';
+                    html += '<div class="reply-to-indicator" data-reply-id="' + escapeHtml(msg.replyTo) + '">';
+                    html += escapeHtml(replyMsg.senderName || replyMsg.sender) + ': ' + escapeHtml(replyText);
+                    html += '</div>';
+                }
+                
+                html += '<div class="message ' + msgCls + '">';
+                html += '<div class="message-sender">' + escapeHtml(msg.senderName || msg.sender) + '</div>';
+                html += '<div class="message-text">' + escapeHtml(msg.text) + '</div>';
+                html += '</div>';
+                
+                // Reactions
+                var msgReactions = reactionsMap[msg.id];
+                if (msgReactions && Object.keys(msgReactions).length > 0) {
+                    html += '<div class="reactions-container">';
+                    for (var emoji in msgReactions) {
+                        var reaction = msgReactions[emoji];
+                        var bubbleCls = reaction.myReaction ? 'reaction-bubble mine' : 'reaction-bubble';
+                        html += '<div class="' + bubbleCls + '" data-msg-id="' + escapeHtml(msg.id) + '" data-emoji="' + escapeHtml(emoji) + '">';
+                        html += '<span class="reaction-emoji">' + emoji + '</span>';
+                        if (reaction.count > 1) {
+                            html += '<span class="reaction-count">' + reaction.count + '</span>';
+                        }
+                        html += '</div>';
+                    }
+                    html += '</div>';
+                }
+                
+                html += '</div>';
+            }
+            
+            // Show "Thinking..." if AI is generating
+            if (aiGenerating && aiOnline && aiEnabled) {
+                html += '<div class="message-wrapper ai">';
+                html += '<div class="message ai thinking">';
+                html += '<div class="message-sender">' + escapeHtml(getAiSenderName()) + '</div>';
+                html += '<div class="message-text">Thinking...</div>';
+                html += '</div>';
+                html += '</div>';
+            }
+            
+            var messagesHtml = container.innerHTML;
+            var newContent = emptyState.outerHTML + html;
+            if (messagesHtml !== newContent) {
+                container.innerHTML = newContent;
+                container.scrollTop = container.scrollHeight;
+                
+                // Attach click handlers for context menu
+                attachMessageClickHandlers();
+            }
+        }
+        
+        function attachMessageClickHandlers() {
+            var wrappers = document.querySelectorAll('.message-wrapper[data-msg-id]');
+            wrappers.forEach(function(wrapper) {
+                wrapper.onclick = function(e) {
+                    // Don't trigger on reaction bubble clicks
+                    if (e.target.closest('.reaction-bubble')) {
+                        handleReactionClick(e);
+                        return;
+                    }
+                    // Don't trigger on reply-to indicator clicks
+                    if (e.target.closest('.reply-to-indicator')) {
+                        handleReplyIndicatorClick(e);
+                        return;
+                    }
+                    var msgId = wrapper.getAttribute('data-msg-id');
+                    showContextMenu(e, msgId);
+                };
+            });
+        }
+        
+        function handleReactionClick(e) {
+            var bubble = e.target.closest('.reaction-bubble');
+            if (!bubble) return;
+            
+            var msgId = bubble.getAttribute('data-msg-id');
+            var emoji = bubble.getAttribute('data-emoji');
+            
+            toggleReaction(msgId, emoji);
+        }
+        
+        function handleReplyIndicatorClick(e) {
+            var indicator = e.target.closest('.reply-to-indicator');
+            if (!indicator) return;
+            
+            var replyId = indicator.getAttribute('data-reply-id');
+            scrollToMessage(replyId);
+        }
+        
+        function scrollToMessage(msgId) {
+            var wrapper = document.querySelector('.message-wrapper[data-msg-id="' + msgId + '"]');
+            if (wrapper) {
+                wrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                wrapper.style.outline = '2px solid ' + 'var(--accent)';
+                setTimeout(function() {
+                    wrapper.style.outline = '';
+                }, 1500);
+            }
+        }
+        
+        // Context menu functions
+        function showContextMenu(e, msgId) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            contextMenuMsgId = msgId;
+            
+            var overlay = document.getElementById('contextMenuOverlay');
+            var menu = document.getElementById('contextMenu');
+            
+            // Position the menu near the click
+            var x = e.clientX;
+            var y = e.clientY;
+            
+            // Ensure menu stays on screen
+            var menuWidth = 140;
+            var menuHeight = 80;
+            
+            if (x + menuWidth > window.innerWidth) {
+                x = window.innerWidth - menuWidth - 10;
+            }
+            if (y + menuHeight > window.innerHeight) {
+                y = window.innerHeight - menuHeight - 10;
+            }
+            
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+            
+            overlay.classList.add('visible');
+        }
+        
+        function hideContextMenu() {
+            var overlay = document.getElementById('contextMenuOverlay');
+            overlay.classList.remove('visible');
+            contextMenuMsgId = null;
+        }
+        
+        function showEmojiPicker(e) {
+            var picker = document.getElementById('emojiPicker');
+            var menu = document.getElementById('contextMenu');
+            
+            // Position near the context menu
+            var rect = menu.getBoundingClientRect();
+            var x = rect.left;
+            var y = rect.bottom + 5;
+            
+            // Ensure it stays on screen
+            var pickerWidth = 220;
+            var pickerHeight = 80;
+            
+            if (x + pickerWidth > window.innerWidth) {
+                x = window.innerWidth - pickerWidth - 10;
+            }
+            if (y + pickerHeight > window.innerHeight) {
+                y = rect.top - pickerHeight - 5;
+            }
+            
+            picker.style.left = x + 'px';
+            picker.style.top = y + 'px';
+            picker.classList.add('visible');
+        }
+        
+        function hideEmojiPicker() {
+            var picker = document.getElementById('emojiPicker');
+            picker.classList.remove('visible');
+        }
+        
+        function toggleReaction(msgId, emoji) {
+            if (!reactionsMap[msgId]) {
+                reactionsMap[msgId] = {};
+            }
+            
+            var msgReactions = reactionsMap[msgId];
+            
+            if (msgReactions[emoji] && msgReactions[emoji].myReaction) {
+                // Remove my reaction
+                msgReactions[emoji].count--;
+                msgReactions[emoji].myReaction = false;
+                msgReactions[emoji].users = msgReactions[emoji].users.filter(function(u) { return u !== myId; });
+                
+                if (msgReactions[emoji].count <= 0) {
+                    delete msgReactions[emoji];
+                }
+            } else {
+                // Add my reaction
+                if (!msgReactions[emoji]) {
+                    msgReactions[emoji] = { count: 0, users: [], myReaction: false };
+                }
+                msgReactions[emoji].count++;
+                msgReactions[emoji].myReaction = true;
+                msgReactions[emoji].users.push(myId);
+            }
+            
+            // Send reaction to network
+            sendReaction(msgId, emoji, msgReactions[emoji] ? msgReactions[emoji].myReaction : false);
+            
+            renderMessages();
+        }
+        
+        async function sendReaction(targetMsgId, emoji, isAdding) {
+            if (!encryptionReady) return;
+            
+            var msgId = 'react-' + generateSecureId(12);
+            var ts = Date.now();
+            var displayName = localStorage.getItem(DISPLAY_NAME_KEY + roomId) || '';
+            
+            var payload = {
+                type: 'reaction',
+                targetMsgId: targetMsgId,
+                emoji: emoji,
+                isAdding: isAdding,
+                senderName: myId,
+                displayName: displayName
+            };
+            
+            try {
+                var encrypted = await encryptMessage(JSON.stringify(payload), msgId, ts, myId);
+                
+                roomRef.get('messages').get(msgId).put({
+                    id: msgId,
+                    ts: ts,
+                    sender: myId,
+                    v: 1,
+                    n: encrypted.n,
+                    ct: encrypted.ct
+                });
+            } catch (e) {
+                console.error('Failed to send reaction:', e);
+            }
+        }
+        
+        function setReplyingTo(msgId) {
+            var msg = null;
+            for (var i = 0; i < messagesArray.length; i++) {
+                if (messagesArray[i].id === msgId) {
+                    msg = messagesArray[i];
+                    break;
+                }
+            }
+            
+            if (msg) {
+                replyingTo = {
+                    id: msg.id,
+                    senderName: msg.senderName || msg.sender,
+                    text: msg.text
+                };
+                updateReplyBar();
+                document.getElementById('messageInput').focus();
+            }
+        }
+        
+        function clearReplyingTo() {
+            replyingTo = null;
+            updateReplyBar();
+        }
+        
+        function updateReplyBar() {
+            var replyBar = document.getElementById('replyBar');
+            if (!replyBar) return;
+            
+            if (replyingTo) {
+                replyBar.classList.add('visible');
+                document.getElementById('replyBarSender').textContent = replyingTo.senderName;
+                var text = replyingTo.text.substring(0, 60);
+                if (replyingTo.text.length > 60) text += '...';
+                document.getElementById('replyBarText').textContent = text;
+            } else {
+                replyBar.classList.remove('visible');
+            }
+        }
+        
+        // Set up context menu handlers
+        document.getElementById('contextMenuOverlay').onclick = function(e) {
+            if (e.target === this) {
+                hideContextMenu();
+                hideEmojiPicker();
+            }
+        };
+        
+        document.getElementById('contextMenuReact').onclick = function(e) {
+            e.stopPropagation();
+            showEmojiPicker(e);
+        };
+        
+        document.getElementById('contextMenuReply').onclick = function() {
+            if (contextMenuMsgId) {
+                setReplyingTo(contextMenuMsgId);
+            }
+            hideContextMenu();
+            hideEmojiPicker();
+        };
+        
+        // Emoji picker handlers
+        document.querySelectorAll('.emoji-picker-btn').forEach(function(btn) {
+            btn.onclick = function() {
+                var emoji = this.getAttribute('data-emoji');
+                if (contextMenuMsgId && emoji) {
+                    toggleReaction(contextMenuMsgId, emoji);
+                }
+                hideContextMenu();
+                hideEmojiPicker();
+            };
+        });
+        
+        // Close context menu on Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideContextMenu();
+                hideEmojiPicker();
+                clearReplyingTo();
+            }
+        });
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            var div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function getAiSenderName() {
+            var model = document.getElementById('aiModelSelect').value;
+            return 'AI (' + model + ')';
+        }
+
+        // ===== OLLAMA AI =====
+        
+        async function checkOllamaStatus() {
+            if (!AI_FEATURE_ENABLED) {
+                updateAiStatus(false, 'Disabled');
+                return false;
+            }
+
+            updateAiStatus(null, 'Checking');
+            
+            try {
+                var response = await fetch(OLLAMA_BASE_URL + '/api/tags', {
+                    method: 'GET',
+                    signal: AbortSignal.timeout(3000)
+                });
+                
+                if (response.ok) {
+                    var data = await response.json();
+                    updateAiStatus(true, 'Online');
+                    return true;
+                } else {
+                    updateAiStatus(false, 'Offline');
+                    return false;
+                }
+            } catch (e) {
+                console.log('Ollama check failed:', e);
+                updateAiStatus(false, 'Offline');
+                return false;
+            }
+        }
+
+        function addToContextBuffer(msg) {
+            if (!AI_FEATURE_ENABLED) return;
+            contextBuffer.push({
+                role: msg.isAI ? 'assistant' : 'user',
+                content: (msg.senderName || msg.sender) + ': ' + msg.text
+            });
+            
+            // Trim to max size
+            while (contextBuffer.length > MAX_CONTEXT_MESSAGES) {
+                contextBuffer.shift();
+            }
+        }
+
+        function shouldRespondToMessage(msg) {
+            if (!AI_FEATURE_ENABLED) return false;
+            // Don't respond to AI messages (but do respond to our own messages)
+            if (msg.isAI) return false;
+            
+            // Don't respond if AI is disabled
+            if (!aiEnabled || !aiOnline) return false;
+            
+            // Check if already processed
+            if (processedAiMessages.has(msg.id)) return false;
+            
+            // Don't respond to unencrypted messages
+            if (msg.unencrypted) return false;
+            
+            return true;
+        }
+
+        function scheduleAiReply(msg) {
+            if (!AI_FEATURE_ENABLED) return;
+            processedAiMessages.add(msg.id);
+            
+            // Debounce - wait for rapid messages to settle
+            if (aiDebounceTimer) {
+                clearTimeout(aiDebounceTimer);
+            }
+            
+            aiPendingMessage = msg;
+            
+            aiDebounceTimer = setTimeout(function() {
+                if (aiPendingMessage) {
+                    generateAiReply(aiPendingMessage);
+                    aiPendingMessage = null;
+                }
+            }, 800);
+        }
+
+        // Anonymize usernames in context buffer before sending to AI
+        function anonymizeContextForAI(contextBuffer) {
+            var usernameMap = {};
+            var userCounter = 1;
+            var anonymizedMessages = [];
+            
+            for (var i = 0; i < contextBuffer.length; i++) {
+                var msg = contextBuffer[i];
+                var content = msg.content;
+                
+                // Extract the username part (format: "username: message")
+                var colonIndex = content.indexOf(': ');
+                if (colonIndex > -1) {
+                    var originalName = content.substring(0, colonIndex);
+                    var messageText = content.substring(colonIndex + 2);
+                    
+                    // Get or create anonymized name
+                    if (!usernameMap[originalName]) {
+                        if (msg.role === 'assistant') {
+                            usernameMap[originalName] = 'AI Assistant';
+                        } else {
+                            usernameMap[originalName] = 'User ' + userCounter;
+                            userCounter++;
+                        }
+                    }
+                    
+                    anonymizedMessages.push({
+                        role: msg.role,
+                        content: usernameMap[originalName] + ': ' + messageText
+                    });
+                } else {
+                    // No colon found, keep as-is
+                    anonymizedMessages.push(msg);
+                }
+            }
+            
+            return anonymizedMessages;
+        }
+
+        async function generateAiReply(triggerMsg) {
+            if (!AI_FEATURE_ENABLED) return;
+            if (aiGenerating) return;
+            if (!aiOnline || !aiEnabled) return;
+            
+            aiGenerating = true;
+            renderMessages();
+            
+            var model = document.getElementById('aiModelSelect').value;
+            
+            // Anonymize usernames to prevent AI confusion
+            var anonymizedContext = anonymizeContextForAI(contextBuffer);
+            
+            // Build context messages
+            var messages = [
+                {
+                    role: 'system',
+                    content: currentAiPrompt
+                }
+            ];
+            
+            // Add recent context (anonymized)
+            for (var i = 0; i < anonymizedContext.length; i++) {
+                messages.push(anonymizedContext[i]);
+            }
+            
+            try {
+                var response = await fetch(OLLAMA_BASE_URL + '/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: messages,
+                        stream: false,
+                        options: {
+                            num_predict: 150
+                        }
+                    }),
+                    signal: AbortSignal.timeout(30000)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Ollama returned ' + response.status);
+                }
+                
+                var data = await response.json();
+                var aiText = data.message && data.message.content ? data.message.content.trim() : '';
+                
+                // Strip "AI Assistant:", "AI:", or any "Username:" prefix from AI responses
+                if (aiText && aiText.indexOf(':') !== -1) {
+                    // Only strip if the colon is within the first ~50 chars (likely a prefix)
+                    var colonIndex = aiText.indexOf(':');
+                    if (colonIndex < 50) {
+                        aiText = aiText.substring(colonIndex + 1).trim();
+                    }
+                }
+                
+                if (aiText) {
+                    playAIMessage();
+                    await sendAiMessage(aiText);
+                }
+            } catch (e) {
+                console.error('AI generation failed:', e);
+                showAiError('AI error: ' + (e.message || 'Unknown error'));
+            } finally {
+                aiGenerating = false;
+                renderMessages();
+            }
+        }
+
+        async function sendAiMessage(text) {
+            if (!AI_FEATURE_ENABLED) return;
+            if (!encryptionReady) return;
+            
+            var msgId = 'ai-' + generateSecureId(12);
+            var ts = Date.now();
+            var displayName = localStorage.getItem(DISPLAY_NAME_KEY + roomId) || '';
+            
+            // Build the payload
+            var payload = {
+                text: text,
+                senderName: getAiSenderName(),
+                displayName: displayName,
+                isAI: true
+            };
+            
+            // Encrypt
+            var encrypted = await encryptMessage(JSON.stringify(payload), msgId, ts, myId);
+            
+            // Store
+            roomRef.get('messages').get(msgId).put({
+                id: msgId,
+                ts: ts,
+                sender: myId,
+                v: 1,
+                n: encrypted.n,
+                ct: encrypted.ct
+            });
+            
+            // Add to local
+            var localMsg = {
+                id: msgId,
+                ts: ts,
+                sender: myId,
+                senderName: getAiSenderName(),
+                text: text,
+                isAI: true,
+                unsent: false
+            };
+            
+            seenMessages[msgId] = true;
+            messagesArray.push(localMsg);
+            addToContextBuffer(localMsg);
+            renderMessages();
+        }
+
+        // ===== SEND MESSAGE =====
+
+        async function sendMessage() {
+            var input = document.getElementById('messageInput');
+            var text = input.value.trim();
+            
+            if (!text) return;
+            if (!encryptionReady) {
+                showToast('Encryption not ready', true);
+                return;
+            }
+            
+            input.value = '';
+            playLocalSent();
+            
+            var msgId = generateSecureId(16);
+            var ts = Date.now();
+            var displayName = localStorage.getItem(DISPLAY_NAME_KEY + roomId) || '';
+            
+            // Build the payload
+            var payload = {
+                text: text,
+                senderName: myId,
+                displayName: displayName,
+                isAI: false
+            };
+            
+            // Add reply-to if replying
+            if (replyingTo) {
+                payload.replyTo = replyingTo.id;
+            }
+            
+            // Encrypt
+            try {
+                var encrypted = await encryptMessage(JSON.stringify(payload), msgId, ts, myId);
+                
+                // Add to local immediately (optimistic)
+                var localMsg = {
+                    id: msgId,
+                    ts: ts,
+                    sender: myId,
+                    senderName: displayName || myId,
+                    text: text,
+                    isAI: false,
+                    unsent: true,
+                    replyTo: replyingTo ? replyingTo.id : null
+                };
+                
+                // Clear replying state
+                clearReplyingTo();
+                
+                seenMessages[msgId] = true;
+                messagesArray.push(localMsg);
+                addToContextBuffer(localMsg);
+                renderMessages();
+                
+                // Store encrypted message
+                roomRef.get('messages').get(msgId).put({
+                    id: msgId,
+                    ts: ts,
+                    sender: myId,
+                    v: 1,
+                    n: encrypted.n,
+                    ct: encrypted.ct
+                }, function(ack) {
+                    if (ack.err) {
+                        console.error('Failed to send:', ack.err);
+                        showToast('Failed to send message', true);
+                    } else {
+                        // Mark as sent
+                        for (var i = 0; i < messagesArray.length; i++) {
+                            if (messagesArray[i].id === msgId) {
+                                messagesArray[i].unsent = false;
+                                break;
+                            }
+                        }
+                        lastAckOk = true;
+                        if (!isNetworkOk) {
+                            updateStatus('connected', 'Network: ok');
+                        }
+                        renderMessages();
+                    }
+                });
+            } catch (e) {
+                console.error('Encryption failed:', e);
+                showToast('Encryption failed', true);
+            }
+        }
+
+        // Compute shown name with strict fallback order:
+        // 1) displayName (if non-empty)
+        // 2) senderName (existing username)
+        // 3) senderId
+        function computeShownName(displayName, senderName, _unused, senderId) {
+            if (displayName && displayName.trim()) {
+                return displayName.trim();
+            }
+            if (senderName && senderName.trim()) {
+                return senderName.trim();
+            }
+            return senderId || 'unknown';
+        }
+
+        // ===== HANDLE INCOMING MESSAGES =====
+
+        async function handleIncomingMessage(data, key) {
+            if (!data || typeof data !== 'object') return;
+            
+            var msgId = data.id;
+            if (!msgId) return;
+            
+            // Deduplicate
+            if (seenMessages[msgId]) {
+                for (var i = 0; i < messagesArray.length; i++) {
+                    if (messagesArray[i].id === msgId && messagesArray[i].unsent) {
+                        messagesArray[i].unsent = false;
+                        renderMessages();
+                        break;
+                    }
+                }
+                return;
+            }
+            
+            if (typeof data.ts !== 'number' || !data.sender) {
+                return;
+            }
+            
+            seenMessages[msgId] = true;
+            
+            // Check if this is an encrypted message (v1 format)
+            if (data.v === 1 && data.ct && data.n) {
+                // Encrypted message
+                if (!encryptionReady) {
+                    // Can't decrypt without key
+                    console.warn('Received encrypted message but no key available');
+                    return;
+                }
+                
+                try {
+                    var decryptedJson = await decryptMessage(data.n, data.ct, data.id, data.ts, data.sender);
+                    var decrypted = JSON.parse(decryptedJson);
+                    
+                    // Compute shown name with strict fallback order:
+                    // 1) payload.displayName (if non-empty)
+                    // 2) payload.senderName (existing username)
+                    // 3) data.sender (sender id)
+                    var shownName = computeShownName(
+                        decrypted.displayName,
+                        decrypted.senderName,
+                        null,
+                        data.sender
+                    );
+                    
+                    // Check if this is a reaction message
+                    if (decrypted.type === 'reaction') {
+                        handleIncomingReaction(decrypted, data.sender);
+                        return;
+                    }
+                    
+                    var msgObj = {
+                        id: msgId,
+                        ts: data.ts,
+                        sender: data.sender,
+                        senderName: shownName,
+                        text: decrypted.text,
+                        isAI: decrypted.isAI === true,
+                        unsent: false,
+                        replyTo: decrypted.replyTo || null
+                    };
+                    
+                    messagesArray.push(msgObj);
+                    addToContextBuffer(msgObj);
+                    
+                    if (!isNetworkOk) {
+                        updateStatus('connected', 'Network: ok');
+                    }
+                    
+                    renderMessages();
+                    
+                    // Play sound for remote messages
+                    if (data.sender !== myId) {
+                        playRemoteMessage();
+                    }
+                    
+                    // Check if AI should respond
+                    if (shouldRespondToMessage(msgObj)) {
+                        scheduleAiReply(msgObj);
+                    }
+                } catch (e) {
+                    console.error('Failed to decrypt message:', e);
+                    // Show as undecryptable
+                    messagesArray.push({
+                        id: msgId,
+                        ts: data.ts,
+                        sender: data.sender,
+                        senderName: data.sender,
+                        text: '[Unable to decrypt]',
+                        isAI: false,
+                        unsent: false,
+                        unencrypted: true
+                    });
+                    renderMessages();
+                }
+            } else if (data.text) {
+                // Legacy unencrypted message (backward compatibility)
+                var msgObj = {
+                    id: msgId,
+                    ts: data.ts,
+                    sender: data.sender,
+                    senderName: data.senderName || data.sender,
+                    text: '[unencrypted] ' + data.text,
+                    isAI: data.isAI === true,
+                    unsent: false,
+                    unencrypted: true
+                };
+                
+                messagesArray.push(msgObj);
+                // Don't add to context buffer (unencrypted)
+                
+                if (!isNetworkOk) {
+                    updateStatus('connected', 'Network: ok');
+                }
+                
+                renderMessages();
+                // Don't trigger AI for unencrypted messages
+            }
+        }
+
+        // ===== INITIALIZATION =====
+
+        async function boot() {
+            applyAiDisabledState();
+            // Show username dialog first, defer GunDB connection
+            pendingBoot = true;
+            showUsernameDialog();
+        }
+
+        async function actualBoot() {
+            // Generate per-browser client ID (persisted)
+            myClientId = localStorage.getItem('CLIENT_ID');
+            if (!myClientId) {
+                myClientId = 'client-' + generateSecureId(8);
+                localStorage.setItem('CLIENT_ID', myClientId);
+            }
+            
+            // Generate per-tab user ID
+            myId = 'user-' + generateSecureId(4);
+            
+            // Check for room in URL
+            var existingRoom = getRoomIdFromUrl();
+            var isHost = false;
+            
+            if (!existingRoom) {
+                // Generate new room ID - this device is the host
+                roomId = generateSecureId(16);
+                setRoomIdInUrl(roomId);
+                isHost = true;
+                localStorage.setItem(IS_HOST_KEY + roomId, '1');
+                
+                // Generate encryption key for new room
+                roomKeyBytes = generateRoomKey();
+                setKeyInHash(roomKeyBytes);
+            } else {
+                roomId = existingRoom;
+                // Check if we were previously host of this room
+                isHost = localStorage.getItem(IS_HOST_KEY + roomId) === '1';
+                
+                // Try to get key from URL hash
+                roomKeyBytes = getKeyFromHash();
+            }
+            
+            // Initialize encryption
+            if (roomKeyBytes) {
+                try {
+                    derivedAesKey = await deriveAesKey(roomKeyBytes, roomId);
+                    encryptionReady = true;
+                    updateEncryptionStatus(true);
+                } catch (e) {
+                    console.error('Failed to derive encryption key:', e);
+                    showError('Encryption setup failed. Please refresh.');
+                    updateEncryptionStatus(false);
+                    return;
+                }
+            } else {
+                // Missing key - show error
+                showError('Missing encryption key in link (#k=...). Cannot send or receive messages.');
+                updateEncryptionStatus(false);
+                encryptionReady = false;
+            }
+            
+            // AI codepaths are intentionally disabled in this chat-only build.
+            var storedAiEnabled = localStorage.getItem(AI_ENABLED_KEY + roomId);
+            if (AI_FEATURE_ENABLED && storedAiEnabled !== null) {
+                aiEnabled = storedAiEnabled === '1';
+            } else if (AI_FEATURE_ENABLED) {
+                aiEnabled = isHost;
+            } else {
+                aiEnabled = false;
+            }
+            updateAiToggle();
+            
+            // Compute invite URL (includes hash with key)
+            inviteUrl = window.location.origin + window.location.pathname + '?room=' + roomId;
+            if (roomKeyBytes) {
+                inviteUrl += '#k=' + base64urlEncode(roomKeyBytes);
+            }
+            
+            // Set up invite input
+            var inviteInput = document.getElementById('inviteInput');
+            inviteInput.value = inviteUrl;
+            
+            // Share dialog link is already set up via the shareBtn handler
+            // Just need to ensure QR can be regenerated if URL changes
+            shareDialogQrGenerated = false;
+            
+            // Apply pending username from dialog
+            var pendingUsername = sessionStorage.getItem('PENDING_USERNAME');
+            if (pendingUsername) {
+                localStorage.setItem(DISPLAY_NAME_KEY + roomId, pendingUsername);
+                sessionStorage.removeItem('PENDING_USERNAME');
+            }
+            
+            // Display name handlers
+            var displayNameInput = document.getElementById('displayNameInput');
+            var displayNameSaveBtn = document.getElementById('displayNameSaveBtn');
+            
+            if (displayNameInput && displayNameSaveBtn) {
+                // Load saved display name
+                var savedDisplayName = localStorage.getItem(DISPLAY_NAME_KEY + roomId) || '';
+                displayNameInput.value = savedDisplayName;
+                
+                displayNameSaveBtn.onclick = function() {
+                    var newName = displayNameInput.value.trim();
+                    try {
+                        localStorage.setItem(DISPLAY_NAME_KEY + roomId, newName);
+                        displayNameSaveBtn.textContent = '✓ Saved!';
+                        displayNameSaveBtn.classList.add('saved');
+                        setTimeout(function() {
+                            displayNameSaveBtn.textContent = 'Save';
+                            displayNameSaveBtn.classList.remove('saved');
+                        }, 1500);
+                    } catch (e) {
+                        console.error('Failed to save display name:', e);
+                    }
+                };
+                
+                // Allow Enter key to save
+                displayNameInput.onkeydown = function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        displayNameSaveBtn.click();
+                    }
+                };
+            }
+            
+            document.getElementById('sendBtn').onclick = sendMessage;
+            
+            document.getElementById('messageInput').onkeydown = function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            };
+            
+            // Reply bar close button
+            document.getElementById('replyBarClose').onclick = clearReplyingTo;
+            
+            // Scroll to bottom when clicking message input
+            document.getElementById('messageInput').onfocus = function() {
+                var container = document.getElementById('messages');
+                container.scrollTop = container.scrollHeight;
+            };
+            
+            if (AI_FEATURE_ENABLED) {
+                document.getElementById('aiToggle').onclick = function() {
+                    aiEnabled = !aiEnabled;
+                    updateAiToggle();
+                    localStorage.setItem(AI_ENABLED_KEY + roomId, aiEnabled ? '1' : '0');
+                    
+                    if (aiEnabled && !aiOnline) {
+                        checkOllamaStatus();
+                    }
+                };
+                
+                var savedAiPrompt = localStorage.getItem(AI_PROMPT_KEY + roomId);
+                if (savedAiPrompt) {
+                    currentAiPrompt = savedAiPrompt;
+                }
+                
+                document.getElementById('aiCustomizeBtn').onclick = function(e) {
+                    e.stopPropagation();
+                    document.getElementById('aiPromptTextarea').value = currentAiPrompt;
+                    document.getElementById('aiPromptDialogOverlay').classList.remove('hidden');
+                };
+                
+                document.getElementById('aiPromptDialogClose').onclick = function() {
+                    document.getElementById('aiPromptDialogOverlay').classList.add('hidden');
+                };
+                
+                document.getElementById('aiPromptDialogOverlay').onclick = function(e) {
+                    if (e.target === this) {
+                        this.classList.add('hidden');
+                    }
+                };
+                
+                document.getElementById('aiPromptSaveBtn').onclick = function() {
+                    var newPrompt = document.getElementById('aiPromptTextarea').value.trim();
+                    if (newPrompt) {
+                        currentAiPrompt = newPrompt;
+                        localStorage.setItem(AI_PROMPT_KEY + roomId, newPrompt);
+                    }
+                    document.getElementById('aiPromptDialogOverlay').classList.add('hidden');
+                };
+                
+                document.getElementById('aiPromptResetBtn').onclick = function() {
+                    document.getElementById('aiPromptTextarea').value = DEFAULT_AI_PROMPT;
+                };
+                
+                document.getElementById('aiModelSelect').onchange = function() {
+                    if (aiEnabled) {
+                        checkOllamaStatus();
+                    }
+                };
+            }
+            
+            // Initial render
+            renderMessages();
+            
+            if (AI_FEATURE_ENABLED) {
+                checkOllamaStatus();
+                
+                setInterval(function() {
+                    if (aiEnabled || !aiOnline) {
+                        checkOllamaStatus();
+                    }
+                }, 30000);
+            }
+            
+            // Show loading status
+            updateStatus('warning', 'Loading relays…');
+            
+            // Fetch relays
+            var relays = [];
+            
+            try {
+                relays = await Promise.race([
+                    ShogunRelays.getRelays({ timeout: 3000, verbose: false }),
+                    new Promise(function(_, reject) {
+                        setTimeout(function() { reject(new Error('timeout')); }, 4000);
+                    })
+                ]);
+            } catch (e) {
+                console.log('getRelays failed, trying forceListUpdate:', e);
+                relays = [];
+            }
+            
+            if (!relays || relays.length === 0) {
+                try {
+                    updateStatus('warning', 'Fetching relay list…');
+                    relays = await ShogunRelays.forceListUpdate();
+                } catch (e) {
+                    console.log('forceListUpdate also failed:', e);
+                    relays = [];
+                }
+            }
+            
+            if (!relays || relays.length === 0) {
+                showError('Could not load relay network. Please check your connection and refresh.');
+                updateStatus('error', 'Network: failed');
+                return;
+            }
+            
+            relaysCount = relays.length;
+            updateStatus('warning', 'Network: connecting…');
+            
+            // Initialize Gun with live relays
+            gun = Gun({ peers: relays });
+            
+            // Track peer connections
+            if (gun.on) {
+                gun.on('hi', function(peer) {
+                    peerHiCount++;
+                    if (peerHiCount === 1) {
+                        updateStatus('connected', 'Network: ok');
+                        setInputsEnabled(true);
+                    }
+                });
+                
+                gun.on('bye', function(peer) {
+                    peerHiCount = Math.max(0, peerHiCount - 1);
+                    if (peerHiCount === 0 && !lastAckOk) {
+                        updateStatus('warning', 'Network: reconnecting…');
+                    }
+                });
+            }
+            
+            // Get room reference
+            roomRef = gun.get('simplechat').get(roomId);
+            
+            // Subscribe to messages using .once() first for initial load,
+            // then .on() for real-time updates. This prevents GunDB's
+            // race condition where the first message can be dropped.
+            // See: https://gun.eco/docs/API#-a-name-map-a-gun-map-callback-
+            
+            // First, load all existing messages with .once() to ensure we don't miss any
+            roomRef.get('messages').map().once(function(data, key) {
+                if (data) {
+                    handleIncomingMessage(data, key);
+                }
+            });
+            
+            // Then subscribe to real-time updates with .on()
+            // The deduplication in handleIncomingMessage will prevent duplicates
+            roomRef.get('messages').map().on(handleIncomingMessage);
+            
+            // Set up network check timeout
+            networkCheckTimeout = setTimeout(function() {
+                if (peerHiCount === 0 && !lastAckOk) {
+                    updateStatus('warning', 'Network: waiting…');
+                    setInputsEnabled(true);
+                }
+            }, 5000);
+            
+            // Enable inputs after a short delay if we have relays
+            setTimeout(function() {
+                if (relaysCount > 0 && !isNetworkOk) {
+                    setInputsEnabled(true);
+                }
+            }, 2000);
+        }
+
+        // Start the app
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', boot);
+        } else {
+            boot();
+        }
+    </script>
+</body>
+</html>
