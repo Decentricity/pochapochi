@@ -1117,6 +1117,72 @@
             content: '🎨';
         }
 
+        .games-launcher {
+            background: var(--bg-surface);
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+        }
+
+        .games-grid {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .game-launcher-card {
+            width: 140px;
+            min-height: 140px;
+            background: linear-gradient(180deg, #fff7d8 0%, #f0e4a8 100%);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.18);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'IBM Plex Mono', monospace;
+            cursor: pointer;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .game-launcher-card:hover {
+            background: linear-gradient(180deg, #fffce9 0%, #efe1a0 100%);
+        }
+
+        .game-launcher-card:active {
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.18);
+        }
+
+        .game-launcher-icon {
+            font-size: 42px;
+            line-height: 1;
+        }
+
+        .game-launcher-name {
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .game-launcher-subtitle {
+            font-size: 9px;
+            color: var(--text-secondary);
+            max-width: 100px;
+            line-height: 1.4;
+        }
+
+        .game-detail.hidden,
+        .games-launcher.hidden {
+            display: none;
+        }
+
         .game-panel {
             background: var(--bg-surface);
             border: 2px solid;
@@ -1804,6 +1870,30 @@
                 overflow: hidden;
             }
 
+            .games-launcher {
+                min-height: 0;
+                height: 100%;
+                padding: 8px;
+            }
+
+            .game-launcher-card {
+                width: 108px;
+                min-height: 108px;
+                gap: 6px;
+            }
+
+            .game-launcher-icon {
+                font-size: 34px;
+            }
+
+            .game-launcher-name {
+                font-size: 10px;
+            }
+
+            .game-launcher-subtitle {
+                font-size: 8px;
+            }
+
             .game-panel {
                 grid-template-columns: minmax(0, 1fr) 116px;
                 grid-template-rows: 1fr;
@@ -2057,36 +2147,47 @@
             </div>
             
             <div class="game-window">
-                <div class="game-window-title">Pocha Pochi: Tebak Gambar</div>
-                <div class="game-panel">
-                    <div class="game-canvas-wrap">
-                        <div class="game-canvas-toolbar">
-                            <span class="game-badge" id="gameRoundBadge">Round idle</span>
-                            <span class="game-badge" id="gameRoleBadge">Viewer</span>
-                        </div>
-                        <div class="game-canvas-board">
-                            <canvas class="game-canvas" id="gameCanvas" width="960" height="540"></canvas>
-                            <div class="game-canvas-overlay" id="gameCanvasOverlay">Start a round to draw, guess in chat, and show the social game concept live.</div>
-                        </div>
+                <div class="game-window-title">Games</div>
+                <div class="games-launcher" id="gamesLauncher">
+                    <div class="games-grid">
+                        <button class="game-launcher-card" id="launchTebakGambarBtn" type="button">
+                            <div class="game-launcher-icon">🎨</div>
+                            <div class="game-launcher-name">Tebak Gambar</div>
+                            <div class="game-launcher-subtitle">Draw, guess, and play with the room.</div>
+                        </button>
                     </div>
-                    <div class="game-side-panel">
-                        <div class="game-info-card">
-                            <div class="game-info-title">Round Status</div>
-                            <div class="game-status-text" id="gameStatusText">No round yet. Start one and become the first drawer.</div>
-                        </div>
-                        <div class="game-info-card">
-                            <div class="game-info-title">Prompt</div>
-                            <div class="game-prompt" id="gamePromptText">Waiting for the first round.</div>
-                            <div class="game-controls">
-                                <button class="retro-btn game-btn" id="gameStartBtn">Start Round</button>
-                                <button class="retro-btn game-btn secondary" id="gameClearBtn">Clear</button>
-                                <button class="retro-btn game-btn reveal" id="gameRevealBtn">Reveal</button>
+                </div>
+                <div class="game-detail hidden" id="gameDetail">
+                    <div class="game-panel">
+                        <div class="game-canvas-wrap">
+                            <div class="game-canvas-toolbar">
+                                <span class="game-badge" id="gameRoundBadge">Round idle</span>
+                                <span class="game-badge" id="gameRoleBadge">Viewer</span>
+                            </div>
+                            <div class="game-canvas-board">
+                                <canvas class="game-canvas" id="gameCanvas" width="960" height="540"></canvas>
+                                <div class="game-canvas-overlay" id="gameCanvasOverlay">Start a round to draw, guess in chat, and show the social game concept live.</div>
                             </div>
                         </div>
-                        <div class="game-info-card">
-                            <div class="game-info-title">Scoreboard</div>
-                            <div class="game-scoreboard" id="gameScoreboard">
-                                <div class="game-score-row"><span>No players scored yet</span><strong>0</strong></div>
+                        <div class="game-side-panel">
+                            <div class="game-info-card">
+                                <div class="game-info-title">Round Status</div>
+                                <div class="game-status-text" id="gameStatusText">No round yet. Start one and become the first drawer.</div>
+                            </div>
+                            <div class="game-info-card">
+                                <div class="game-info-title">Prompt</div>
+                                <div class="game-prompt" id="gamePromptText">Waiting for the first round.</div>
+                                <div class="game-controls">
+                                    <button class="retro-btn game-btn" id="gameStartBtn">Start Round</button>
+                                    <button class="retro-btn game-btn secondary" id="gameClearBtn">Clear</button>
+                                    <button class="retro-btn game-btn reveal" id="gameRevealBtn">Reveal</button>
+                                </div>
+                            </div>
+                            <div class="game-info-card">
+                                <div class="game-info-title">Scoreboard</div>
+                                <div class="game-scoreboard" id="gameScoreboard">
+                                    <div class="game-score-row"><span>No players scored yet</span><strong>0</strong></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2472,6 +2573,7 @@
         var gameState = null;
         var gameStateLoaded = false;
         var gameCanvasCtx = null;
+        var activeGameId = null;
         var isDrawing = false;
         var lastDrawPoint = null;
         var gameSyncTimer = null;
@@ -2848,6 +2950,22 @@
             return gamePrompts[Math.floor(Math.random() * gamePrompts.length)];
         }
 
+        function openGame(gameId) {
+            activeGameId = gameId;
+            var launcher = document.getElementById('gamesLauncher');
+            var detail = document.getElementById('gameDetail');
+
+            if (launcher) {
+                launcher.classList.toggle('hidden', gameId === 'tebak-gambar');
+            }
+
+            if (detail) {
+                detail.classList.toggle('hidden', gameId !== 'tebak-gambar');
+            }
+
+            renderGame();
+        }
+
         function canCurrentUserDraw() {
             return !!(gameState && gameState.phase === 'drawing' && gameState.drawerId === myId);
         }
@@ -2902,6 +3020,10 @@
         }
 
         function renderGame() {
+            if (activeGameId !== 'tebak-gambar') {
+                return;
+            }
+
             var roundBadge = document.getElementById('gameRoundBadge');
             var roleBadge = document.getElementById('gameRoleBadge');
             var statusText = document.getElementById('gameStatusText');
@@ -3342,6 +3464,9 @@
         document.getElementById('shareBtn').onclick = openShareDialog;
         document.getElementById('shareDialogClose').onclick = closeShareDialog;
         document.getElementById('shareCopyBtn').onclick = copyShareLink;
+        document.getElementById('launchTebakGambarBtn').onclick = function() {
+            openGame('tebak-gambar');
+        };
         document.getElementById('gameStartBtn').onclick = startNewRound;
         document.getElementById('gameClearBtn').onclick = clearCurrentDrawing;
         document.getElementById('gameRevealBtn').onclick = revealCurrentAnswer;
@@ -4364,6 +4489,7 @@
             setupGameCanvas();
             gameState = createBaseGameState();
             gameStateLoaded = false;
+            openGame(null);
             renderGame();
             // Show username dialog first, defer GunDB connection
             pendingBoot = true;
