@@ -42,9 +42,8 @@
         }
 
         html, body {
-            min-height: 100%;
-            overflow-x: hidden;
-            overflow-y: auto;
+            height: 100%;
+            overflow: hidden;
         }
 
         body {
@@ -351,9 +350,9 @@
         .chat-app {
             display: flex;
             flex-direction: column;
-            min-height: 100dvh;
-            height: auto;
+            height: 100dvh;
             padding: 8px;
+            overflow: hidden;
         }
 
         .chat-app.hidden {
@@ -365,6 +364,7 @@
             display: flex;
             flex-direction: column;
             min-height: 0;
+            overflow: hidden;
         }
 
         .error-banner {
@@ -1096,6 +1096,7 @@
         .game-window {
             display: flex;
             flex-direction: column;
+            flex: 0 0 auto;
             min-height: 0;
             margin-top: 8px;
         }
@@ -1281,6 +1282,7 @@
             flex-direction: column;
             min-height: 0;
             margin-top: 8px;
+            overflow: hidden;
         }
 
         .messages-window-title {
@@ -1728,25 +1730,146 @@
             .chat-app {
                 padding: 4px;
             }
+
+            .chat-main-window {
+                min-height: 0;
+            }
             
             .top-bar {
-                padding: 6px;
+                padding: 5px 6px;
+                gap: 6px;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                align-items: start;
             }
 
             .share-dialog-content {
                 padding: 8px;
             }
-            
+
+            .invite-section {
+                min-width: 0;
+                gap: 4px;
+            }
+
+            .invite-row {
+                gap: 4px;
+            }
+
+            .invite-row .retro-btn {
+                padding: 4px 8px;
+                font-size: 10px;
+            }
+
+            .invite-input {
+                font-size: 8px;
+            }
+
+            .display-name-row {
+                margin-top: 2px;
+                gap: 2px;
+            }
+
+            .display-name-label {
+                font-size: 9px;
+            }
+
+            .display-name-input {
+                font-size: 9px;
+            }
+
+            .display-name-save-btn {
+                padding: 3px 6px;
+                font-size: 9px;
+            }
+
+            .right-panel {
+                gap: 4px;
+                align-items: flex-end;
+            }
+
             .status {
                 font-size: 9px;
+                gap: 2px;
             }
             
             .game-panel {
                 grid-template-columns: 1fr;
+                padding: 5px;
+                gap: 5px;
             }
 
             .game-canvas-board {
-                min-height: 180px;
+                min-height: 112px;
+                height: 20dvh;
+                max-height: 138px;
+            }
+
+            .game-window {
+                margin-top: 6px;
+            }
+
+            .game-window-title,
+            .messages-window-title {
+                padding: 3px 6px;
+                font-size: 10px;
+            }
+
+            .game-canvas-toolbar {
+                gap: 4px;
+            }
+
+            .game-badge {
+                padding: 2px 5px;
+                font-size: 8px;
+            }
+
+            .game-side-panel {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 5px;
+            }
+
+            .game-info-card {
+                padding: 5px;
+                gap: 4px;
+            }
+
+            .game-info-card:last-child {
+                grid-column: 1 / -1;
+            }
+
+            .game-info-title {
+                font-size: 8px;
+            }
+
+            .game-status-text,
+            .game-prompt {
+                font-size: 9px;
+                line-height: 1.35;
+                min-height: 0;
+            }
+
+            .game-controls {
+                gap: 4px;
+            }
+
+            .game-controls .retro-btn {
+                padding: 4px 7px;
+                font-size: 9px;
+            }
+
+            .game-score-row {
+                font-size: 9px;
+                padding: 4px 5px;
+            }
+
+            .messages-window {
+                margin-top: 6px;
+            }
+
+            .messages-container {
+                padding: 6px;
             }
 
             .message {
@@ -1777,6 +1900,25 @@
 
             .ai-panel {
                 min-width: 140px;
+            }
+
+            .reply-bar {
+                padding: 5px 6px;
+            }
+
+            .input-row {
+                gap: 4px;
+                padding-top: 5px;
+            }
+
+            .message-input {
+                font-size: 10px;
+                padding: 5px 6px;
+            }
+
+            .send-btn {
+                padding: 5px 10px;
+                font-size: 10px;
             }
         }
     </style>
